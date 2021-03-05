@@ -1,0 +1,22 @@
+.select {
+  border-radius: 0px;
+  width: 200px!important;
+  margin: 0px;
+  margin-right: 5px;
+  height: 30px;
+}
+.input {
+  border: 1px solid #ccc;
+  color: #acacac;
+  margin-right: 5px;
+  display: inline-block;
+  height: 30px;
+  padding: 4px 6px;
+  font-size: 14px;
+  line-height: 30px;
+  width: 200px;
+}
+
+.ant-form-item {
+  margin-bottom: 0px!important;
+}

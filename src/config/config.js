@@ -5,6 +5,7 @@ module.exports = {
     mode: 'dark',
   },
   multiPage: true,
+  // weekMode: true,
   animate: {
     name: 'lightSpeed',
     direction: 'left'

@@ -1,6 +1,6 @@
 import TabsView from '@/layouts/tabs/TabsView'
+// import PageView from '@/layouts/PageView'
 import BlankView from '@/layouts/BlankView'
-import PageView from '@/layouts/PageView'
 
 // 路由配置
 const options = {
@@ -22,228 +22,145 @@ const options = {
     },
     {
       path: '/',
-      name: '首页',
       component: TabsView,
       redirect: '/login',
       children: [
         {
-          path: 'dashboard',
-          name: 'Dashboard',
+          path: 'welcome',
+          name: '欢迎页',
           meta: {
-            icon: 'dashboard'
-          },
-          component: BlankView,
-          children: [
-            {
-              path: 'workplace',
-              name: '工作台',
-              meta: {
-                page: {
-                  closable: false
-                }
-              },
-              component: () => import('@/pages/dashboard/workplace'),
-            },
-            {
-              path: 'analysis',
-              name: '分析页',
-              component: () => import('@/pages/dashboard/analysis'),
-            }
-          ]
-        },
-        {
-          path: 'form',
-          name: '表单页',
-          meta: {
-            icon: 'form',
+            icon: 'dashboard',
             page: {
-              cacheAble: false
+              closable: false
             }
           },
-          component: PageView,
-          children: [
-            {
-              path: 'basic',
-              name: '基础表单',
-              component: () => import('@/pages/form/basic'),
-            },
-            {
-              path: 'step',
-              name: '分步表单',
-              component: () => import('@/pages/form/step'),
-            },
-            {
-              path: 'advance',
-              name: '高级表单',
-              component: () => import('@/pages/form/advance'),
-            }
-          ]
+          component: () => import('@/pages/welcome/Welcome'),
         },
         {
-          path: 'list',
-          name: '列表页',
+          path: 'user',
+          name: '用户管理',
           meta: {
-            icon: 'table'
+            icon: 'user'
           },
-          component: PageView,
-          children: [
-            {
-              path: 'query',
-              name: '查询表格',
-              meta: {
-                authority: 'queryForm',
-              },
-              component: () => import('@/pages/list/QueryList'),
-            },
-            {
-              path: 'primary',
-              name: '标准列表',
-              component: () => import('@/pages/list/StandardList'),
-            },
-            {
-              path: 'card',
-              name: '卡片列表',
-              component: () => import('@/pages/list/CardList'),
-            },
-            {
-              path: 'search',
-              name: '搜索列表',
-              component: () => import('@/pages/list/search/SearchLayout'),
-              children: [
-                {
-                  path: 'article',
-                  name: '文章',
-                  component: () => import('@/pages/list/search/ArticleList'),
-                },
-                {
-                  path: 'application',
-                  name: '应用',
-                  component: () => import('@/pages/list/search/ApplicationList'),
-                },
-                {
-                  path: 'project',
-                  name: '项目',
-                  component: () => import('@/pages/list/search/ProjectList'),
-                }
-              ]
-            }
-          ]
+          component: () => import('@/pages/User')
         },
         {
-          path: 'details',
-          name: '详情页',
+          path: 'goods',
+          name: '商品管理',
           meta: {
-            icon: 'profile'
+            icon: 'gift'
           },
           component: BlankView,
           children: [
             {
-              path: 'basic',
-              name: '基础详情页',
-              component: () => import('@/pages/detail/BasicDetail')
+              path: 'product',
+              name: '商品信息',
+              component: () => import('@/pages/goods/Product')
             },
             {
-              path: 'advance',
-              name: '高级详情页',
-              component: () => import('@/pages/detail/AdvancedDetail')
+              path: 'color',
+              name: '颜色管理',
+              component: () => import('@/pages/goods/Color')
+            },
+            {
+              path: 'size',
+              name: '规格管理',
+              component: () => import('@/pages/goods/Size')
             }
           ]
         },
         {
-          path: 'result',
-          name: '结果页',
+          path: 'orders',
+          name: '订单管理',
           meta: {
-            icon: 'check-circle-o',
-          },
-          component: PageView,
-          children: [
-            {
-              path: 'success',
-              name: '成功',
-              component: () => import('@/pages/result/Success')
-            },
-            {
-              path: 'error',
-              name: '失败',
-              component: () => import('@/pages/result/Error')
-            }
-          ]
-        },
-        {
-          path: 'exception',
-          name: '异常页',
-          meta: {
-            icon: 'warning',
+            icon: 'menu'
           },
           component: BlankView,
           children: [
             {
-              path: '404',
-              name: 'Exp404',
-              component: () => import('@/pages/exception/404')
+              path: 'unpay',
+              name: '未付款',
+              component: () => import('@/pages/orders/Unpay')
             },
             {
-              path: '403',
-              name: 'Exp403',
-              component: () => import('@/pages/exception/403')
+              path: 'unorder',
+              name: '未发货',
+              component: () => import('@/pages/orders/Unorder')
             },
             {
-              path: '500',
-              name: 'Exp500',
-              component: () => import('@/pages/exception/500')
-            }
+              path: 'ordered',
+              name: '已发货',
+              component: () => import('@/pages/orders/Ordered')
+            },
+            {
+              path: 'completed',
+              name: '已完成',
+              component: () => import('@/pages/orders/Completed')
+            },
+            {
+              path: 'unrefund',
+              name: '未退款',
+              component: () => import('@/pages/orders/Unrefund')
+            },
+            {
+              path: 'refunded',
+              name: '已退款',
+              component: () => import('@/pages/orders/Refunded')
+            },
+            {
+              path: 'recharge',
+              name: '充值订单',
+              component: () => import('@/pages/orders/Recharge')
+            },
           ]
         },
         {
-          path: 'components',
-          name: '内置组件',
+          path: 'rewards',
+          name: '奖励申请',
           meta: {
-            icon: 'appstore-o'
+            icon: 'money-collect'
           },
-          component: PageView,
+          component: BlankView,
           children: [
             {
-              path: 'taskCard',
-              name: '任务卡片',
-              component: () => import('@/pages/components/TaskCard')
+              path: 'unreward',
+              name: '未申请',
+              component: () => import('@/pages/rewards/Unreward')
             },
             {
-              path: 'palette',
-              name: '颜色复选框',
-              component: () => import('@/pages/components/Palette')
+              path: 'rewarding',
+              name: '申请中',
+              component: () => import('@/pages/rewards/Rewarding')
             },
             {
-              path: 'table',
-              name: '高级表格',
-              component: () => import('@/pages/components/table')
-            }
+              path: 'rewarded',
+              name: '已发放',
+              component: () => import('@/pages/rewards/Rewarded')
+            },
           ]
         },
         {
-          name: '验权表单',
-          path: 'auth/form',
+          path: 'admin',
+          name: '账号管理',
           meta: {
-            icon: 'file-excel',
-            authority: {
-              permission: 'form'
-            }
+            icon: 'setting'
           },
-          component: () => import('@/pages/form/basic')
+          component: () => import('@/pages/admin/Admin')
         },
         {
-          name: 'Ant Design Vue',
-          path: 'antdv',
+          path: 'setting',
+          name: '通用设置',
           meta: {
-            icon: 'ant-design',
-            link: 'https://www.antdv.com/docs/vue/introduce-cn/'
-          }
+            icon: 'tool'
+          },
+          component: () => import('@/pages/setting/Setting')
         },
         {
-          name: '使用文档',
-          path: 'document',
+          path: 'logout',
+          name: '退出登录',
           meta: {
-            icon: 'file-word',
-            link: 'https://iczer.gitee.io/vue-antd-admin-docs/'
+            icon: 'poweroff',
+            link: 'http://localhost:8081'
           }
         }
       ]

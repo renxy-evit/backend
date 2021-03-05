@@ -22,8 +22,10 @@
     "core-js": "^3.6.5",
     "date-fns": "^2.14.0",
     "enquire.js": "^2.1.6",
+    "file-saver": "^2.0.5",
     "highlight.js": "^10.2.1",
     "js-cookie": "^2.2.1",
+    "lodash": "^4.17.21",
     "mockjs": "^1.1.0",
     "nprogress": "^0.2.0",
     "viser-vue": "^2.4.8",
@@ -31,7 +33,8 @@
     "vue-i18n": "^8.18.2",
     "vue-router": "^3.3.4",
     "vuedraggable": "^2.23.2",
-    "vuex": "^3.4.0"
+    "vuex": "^3.4.0",
+    "xlsx": "^0.16.9"
   },
   "devDependencies": {
     "@ant-design/colors": "^4.0.1",
@@ -49,6 +52,7 @@
     "fast-deep-equal": "^3.1.3",
     "gh-pages": "^3.1.0",
     "less-loader": "^6.1.1",
+    "script-loader": "^0.7.2",
     "style-resources-loader": "^1.3.2",
     "vue-cli-plugin-style-resources-loader": "^0.1.4",
     "vue-template-compiler": "^2.6.11",
@@ -74,5 +78,19 @@
     "> 1%",
     "last 2 versions",
     "not ie <= 10"
-  ]
+  ],
+  "description": "[简体中文](./README.md) | English\r <h1 align=\"center\">Vue Antd Admin</h1>",
+  "main": "babel.config.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iczer/vue-antd-admin.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/iczer/vue-antd-admin/issues"
+  }
 }
