@@ -20,3 +20,13 @@
 .ant-form-item {
   margin-bottom: 0px!important;
 }
+
+.mt10 {
+  margin-top: 10px;
+}
+
+.ab_tr{
+  position: absolute;
+  top: 0;
+  right: 0;
+}

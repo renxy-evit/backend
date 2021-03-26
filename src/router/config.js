@@ -165,7 +165,8 @@ const options = {
         }
       ]
     },
-  ]
+  ],
+  mode: "history"
 }
 
 export default options

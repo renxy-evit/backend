@@ -1,12 +1,30 @@
 <template>
   <a-card>
+    <a-modal
+      :visible="addSizeFormVisible"
+      :confirm-loading="confirmLoading"
+      @ok="handleAddOk"
+      @ccancel="handleAddCancel"
+    >
+      <a-form :form="addSizeForm" layout="horizontal">
+        <a-form-item label="规格名称">
+          <a-input
+            placeholder="规格名称"
+            v-decorator="[
+              'size_name',
+              { rules: [{ required: true, message: '请填写规格名称' }] },
+            ]"
+          ></a-input>
+        </a-form-item>
+      </a-form>
+    </a-modal>
     <div :class="advanced ? 'search' : null">
       <a-form layout="horizontal">
         <div :class="advanced ? null : 'fold'">
           <a-row>
             <a-col :md="8" :sm="24">
               <a-form-item
-                label="规则编号"
+                label="规格编号"
                 :labelCol="{ span: 5 }"
                 :wrapperCol="{ span: 18, offset: 1 }"
               >
@@ -15,58 +33,11 @@
             </a-col>
             <a-col :md="8" :sm="24">
               <a-form-item
-                label="使用状态"
-                :labelCol="{ span: 5 }"
-                :wrapperCol="{ span: 18, offset: 1 }"
-              >
-                <a-select placeholder="请选择">
-                  <a-select-option value="1">关闭</a-select-option>
-                  <a-select-option value="2">运行中</a-select-option>
-                </a-select>
-              </a-form-item>
-            </a-col>
-            <a-col :md="8" :sm="24">
-              <a-form-item
-                label="调用次数"
+                label="规格名称"
                 :labelCol="{ span: 5 }"
                 :wrapperCol="{ span: 18, offset: 1 }"
               >
                 <a-input-number style="width: 100%" placeholder="请输入" />
-              </a-form-item>
-            </a-col>
-          </a-row>
-          <a-row v-if="advanced">
-            <a-col :md="8" :sm="24">
-              <a-form-item
-                label="更新日期"
-                :labelCol="{ span: 5 }"
-                :wrapperCol="{ span: 18, offset: 1 }"
-              >
-                <a-date-picker
-                  style="width: 100%"
-                  placeholder="请输入更新日期"
-                />
-              </a-form-item>
-            </a-col>
-            <a-col :md="8" :sm="24">
-              <a-form-item
-                label="使用状态"
-                :labelCol="{ span: 5 }"
-                :wrapperCol="{ span: 18, offset: 1 }"
-              >
-                <a-select placeholder="请选择">
-                  <a-select-option value="1">关闭</a-select-option>
-                  <a-select-option value="2">运行中</a-select-option>
-                </a-select>
-              </a-form-item>
-            </a-col>
-            <a-col :md="8" :sm="24">
-              <a-form-item
-                label="描述"
-                :labelCol="{ span: 5 }"
-                :wrapperCol="{ span: 18, offset: 1 }"
-              >
-                <a-input placeholder="请输入" />
               </a-form-item>
             </a-col>
           </a-row>
@@ -84,39 +55,52 @@
     <div>
       <a-space class="operator">
         <a-button @click="addNew" type="primary">新建</a-button>
-        <a-button>批量操作</a-button>
-        <a-dropdown>
-          <a-menu @click="handleMenuClick" slot="overlay">
-            <a-menu-item key="delete">删除</a-menu-item>
-            <a-menu-item key="audit">审批</a-menu-item>
-          </a-menu>
-          <a-button> 更多操作 <a-icon type="down" /> </a-button>
-        </a-dropdown>
+        <a-button @click="handleDeleteAll">批量删除</a-button>
       </a-space>
       <standard-table
         :columns="columns"
-        :dataSource="dataSource"
+        :dataSource="sizeShowList"
         :selectedRows.sync="selectedRows"
         @clear="onClear"
         @change="onChange"
-        @selectedRowChange="onSelectChange"
       >
-        <div slot="description" slot-scope="{ text }">
-          {{ text }}
-        </div>
-        <div slot="action" slot-scope="{ record }">
-          <a style="margin-right: 8px"> <a-icon type="plus" />新增 </a>
-          <a style="margin-right: 8px"> <a-icon type="edit" />编辑 </a>
-          <a @click="deleteRecord(record.key)">
-            <a-icon type="delete" />删除1
-          </a>
-          <a @click="deleteRecord(record.key)" v-auth="`delete`">
-            <a-icon type="delete" />删除2
-          </a>
-        </div>
-        <template slot="statusTitle">
-          <a-icon @click.native="onStatusTitleClick" type="info-circle" />
+        <template
+          v-for="(col, index) in ['size_no', 'size_name']"
+          :slot="col"
+          slot-scope="{ text, record }"
+        >
+          <div :key="index">
+            <a-input
+              v-if="record.editable"
+              :value="text"
+              @change="(e) => handleInfoChange(e.target.value, record.key, col)"
+            />
+            <span v-else>{{ text }}</span>
+          </div>
         </template>
+        <div slot="size_action" slot-scope="{ record }">
+          <!-- <a style="margin-right: 8px"> <a-icon type="edit" />编辑 </a> -->
+          <span v-if="record.editable">
+            <a-button @click="() => handleInfoSave(record.key)">保存</a-button>
+            <a-popconfirm
+              title="确定要取消吗？"
+              @confirm="() => handleInfoCancel(record.key)"
+            >
+              <a-button>取消</a-button>
+            </a-popconfirm>
+          </span>
+          <a-button
+            v-else
+            :disabled="editingKey !== ''"
+            @click="() => handleInfoEdit(record.key)"
+            >编辑</a-button
+          >
+          <br />
+          <a-button @click="handleInfoDelete(record.key)">删除 </a-button>
+        </div>
+        <!-- <template slot="statusTitle">
+          <a-icon @click.native="onStatusTitleClick" type="info-circle" />
+        </template> -->
       </standard-table>
     </div>
   </a-card>
@@ -126,63 +110,58 @@
 import StandardTable from "@/components/table/StandardTable";
 const columns = [
   {
-    title: "规则编号",
-    dataIndex: "no",
+    title: "规格编号",
+    dataIndex: "size_no",
   },
   {
-    title: "描述",
-    dataIndex: "description",
-    scopedSlots: { customRender: "description" },
-  },
-  {
-    title: "服务调用次数",
-    dataIndex: "callNo",
-    sorter: true,
-    needTotal: true,
-    customRender: (text) => text + " 次",
-  },
-  {
-    dataIndex: "status",
-    needTotal: true,
-    slots: { title: "statusTitle" },
-  },
-  {
-    title: "更新时间",
-    dataIndex: "updatedAt",
-    sorter: true,
+    title: "规格名称",
+    dataIndex: "size_name",
+    scopedSlots: { customRender: "size_name" },
   },
   {
     title: "操作",
-    scopedSlots: { customRender: "action" },
+    scopedSlots: { customRender: "size_action" },
   },
 ];
 
-const dataSource = [];
-
-for (let i = 0; i < 100; i++) {
-  dataSource.push({
-    key: i,
-    no: "NO " + i,
-    description: "这是一段描述",
-    callNo: Math.floor(Math.random() * 1000),
-    status: Math.floor(Math.random() * 10) % 4,
-    updatedAt: "2018-07-26",
-  });
-}
+const sizeList = [
+  {
+    key: 1,
+    size_no: 1,
+    size_name: "规格1",
+  },
+  {
+    key: 2,
+    size_no: 2,
+    size_name: "规格2",
+  },
+];
 
 export default {
-  name: "QueryList",
+  name: "size",
   components: { StandardTable },
   data() {
     return {
       advanced: true,
       columns: columns,
-      dataSource: dataSource,
+      sizeList,
+      sizeShowList: sizeList,
       selectedRows: [],
+      editingKey: "",
+      addSizeFormVisible: false,
+      confirmLoading: false,
     };
   },
-  authorize: {
-    deleteRecord: "delete",
+  // authorize: {
+  //   deleteRecord: "delete",
+  // },
+  beforeCreate() {
+    this.addSizeForm = this.$form.createForm(this);
+  },
+  created() {
+    sizeList.forEach((item) => {
+      item["editable"] = false;
+    });
   },
   methods: {
     deleteRecord(key) {
@@ -191,13 +170,6 @@ export default {
     },
     toggleAdvanced() {
       this.advanced = !this.advanced;
-    },
-    remove() {
-      this.dataSource = this.dataSource.filter(
-        (item) =>
-          this.selectedRows.findIndex((row) => row.key === item.key) === -1
-      );
-      this.selectedRows = [];
     },
     onClear() {
       this.$message.info("您清空了勾选的所有行");
@@ -208,23 +180,81 @@ export default {
     onChange() {
       this.$message.info("表格状态改变了");
     },
-    onSelectChange() {
-      this.$message.info("选中行改变了");
-    },
     addNew() {
-      this.dataSource.unshift({
-        key: this.dataSource.length,
-        no: "NO " + this.dataSource.length,
-        description: "这是一段描述",
-        callNo: Math.floor(Math.random() * 1000),
-        status: Math.floor(Math.random() * 10) % 4,
-        updatedAt: "2018-07-26",
-      });
+      this.addSizeFormVisible = true;
     },
-    handleMenuClick(e) {
-      if (e.key === "delete") {
-        this.remove();
+    handleDeleteAll() {
+      this.sizeList = this.sizeList.filter(
+        (item) =>
+          this.selectedRows.findIndex((row) => row.key === item.key) === -1
+      );
+      this.selectedRows = [];
+    },
+    handleInfoChange(value, key, col) {
+      const newData = [...this.sizeList];
+      const target = newData.filter((item) => item.key === key)[0];
+      if (target) {
+        target[col] = value;
+        this.sizeList = newData;
       }
+    },
+    handleInfoEdit(key) {
+      const newData = [...this.sizeList];
+      const target = newData.filter((item) => item.key === key)[0];
+      this.editingKey = key;
+      if (target) {
+        target.editable = true;
+        this.sizeList = newData;
+      }
+    },
+    handleInfoSave(key) {
+      const newData = [...this.sizeList];
+      const newShowData = [...this.sizeShowList];
+      const target = newData.filter((item) => key === item.key)[0];
+      const targetShow = newShowData.filter((item) => key === item.key)[0];
+      if (target && targetShow) {
+        target.editable = false;
+        this.sizeList = newData;
+        Object.assign(targetShow, target);
+        this.sizeShowList = newShowData;
+      }
+      this.editingKey = "";
+    },
+    handleInfoCancel(key) {
+      const newData = [...this.sizeList];
+      const target = newData.filter((item) => key === item.key)[0];
+      if (target) {
+        Object.assign(
+          target,
+          this.sizeList.filter((item) => item.key === key)[0]
+        );
+      }
+      target.editable = false;
+      this.editingKey = "";
+      this.sizeList = newData;
+    },
+    handleInfoDelete(key) {
+      this.sizeList = this.sizeList.filter((item) => item.key !== key);
+      this.selectedRows = this.selectedRows.filter((item) => item.key !== key);
+    },
+    //新增
+    handleAddOk() {
+      this.addSizeForm.validateFields((err, value) => {
+        if (!err) {
+          value.key = this.sizeList.length + 1;
+          value.size_no = this.sizeList.length + 1;
+          this.sizeList.splice(this.sizeList.length, 1, value);
+        }
+      });
+      this.confirmLoading = true;
+      setTimeout(() => {
+        this.addSizeFormVisible = false;
+        this.confirmLoading = false;
+        this.addSizeForm.resetFields();
+      }, 2000);
+    },
+    handleAddCancel() {
+      this.addSizeFormVisible = false;
     },
   },
 };

@@ -6,65 +6,51 @@
       @cancel="handleImportCancel"
       :confirm-loading="import_confirmLoading"
       :fileList="uploadFileList"
+      title="导入商品"
     >
-      <div class="uploadModel">
+      <div class="uploadModal">
         <a-upload
           name="importGoods"
           :multiple="true"
           action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
           :headers="import_headers"
+          :beforeUpload="handleBeforeUploadXlsx"
           @change="handleImportChange"
+          style="margin-right: 10px; float: left"
         >
           <a-button type="upload">导入商品</a-button>
         </a-upload>
-        <a-button @click="downloadModule">下载模板</a-button>
+        <a-button @click="downloadModule" style="float: left"
+          >下载模板</a-button
+        >
       </div>
     </a-modal>
-    <a-form :form="addForm" layout="horizontal">
-      <a-modal
-        :visible="addFormVisible"
-        :confirm-loading="confirmLoading"
-        @ok="handleAddOk"
-        @cancel="handleAddCancel"
-      >
+
+    <prod-submit
+      :is-edit="isEdit"
+      :target="target"
+      :visible="submitVisible"
+      @closeModal="closeModal"
+      @getSubmitInfo="handleAddOk"
+    ></prod-submit>
+    <!-- <a-modal
+      :visible="addFormVisible"
+      :confirm-loading="confirmLoading"
+      @ok="handleAddOk"
+      @cancel="handleAddCancel"
+    >
+      <a-form :form="addForm" layout="horizontal">
         <a-form-item label="商品名称、英文名">
           <a-input
             class="input"
             placeholder="商品名称（必填）"
             v-decorator="[
-              'name',
+              'pro_name',
               { rules: [{ required: true, message: '请填写商品名称' }] },
             ]"
           />
           <a-input class="input" placeholder="商品英文名（选填）" />
         </a-form-item>
-        <!-- <a-form-item></a-form-item> -->
-        <a-divider style="margin: 10px 0" />
-        <a-form-item>
-          <span>展示图上传</span>
-          <div class="clearfix">
-            <a-upload
-              list-type="picture-card"
-              :file-list="fileList"
-              @preview="handlePreview"
-              @change="handleChangePic"
-              mutiple="true"
-              v-decorator="['show_pic', (rules = [{ required: false }])]"
-            >
-              <div v-if="fileList.length < 8">
-                <a-icon type="plus" />
-              </div>
-            </a-upload>
-            <a-modal
-              :visible="previewVisible"
-              :footer="null"
-              @cancel="handleCancelPic"
-            >
-              <img alt="example" style="width: 100%" :src="previewImage" />
-            </a-modal>
-          </div>
-        </a-form-item>
-        <a-divider style="margin: 10px 0" />
         <a-form-item label="商品类别" style="display: inline-block">
           <a-select
             class="select"
@@ -73,11 +59,13 @@
               'category_nav',
               { rules: [{ required: true, message: '请填写商品分类' }] },
             ]"
-            @change="handleCateChange"
           >
-            <a-select-option v-for="nav in navData" :key="nav.id">{{
-              nav.name
-            }}</a-select-option>
+            <a-select-option
+              v-for="nav in navData"
+              :key="nav.id"
+              :value="nav.name"
+              >{{ nav.name }}</a-select-option
+            >
           </a-select>
         </a-form-item>
         <a-form-item style="display: inline-block; margin-top: 38px">
@@ -86,12 +74,15 @@
             placeholder="请选择"
             v-decorator="[
               'category_sub',
-              { rules: [{ required: true, message: '请填写商品分类' }] },
+              { rules: [{ required: false, message: '请填写商品分类' }] },
             ]"
           >
-            <a-select-option v-for="sub in subData" :key="sub.id">{{
-              sub.name
-            }}</a-select-option>
+            <a-select-option
+              v-for="sub in subData"
+              :key="sub.id"
+              :value="sub.name"
+              >{{ sub.name }}</a-select-option
+            >
           </a-select>
         </a-form-item>
         <a-form-item label="商品颜色">
@@ -99,13 +90,13 @@
             class="select"
             placeholder="请选择"
             v-decorator="[
-              'color',
+              'pro_color',
               { rules: [{ required: true, message: '请填写商品颜色' }] },
             ]"
           >
-            <a-select-option value="1">color1</a-select-option>
-            <a-select-option value="2">color2</a-select-option>
-            <a-select-option value="3">color3</a-select-option>
+            <a-select-option v-for="item in colorOptions" :key="item.id">{{
+              item.name
+            }}</a-select-option>
           </a-select>
         </a-form-item>
         <a-form-item label="商品规格">
@@ -113,13 +104,13 @@
             class="select"
             placeholder="请选择"
             v-decorator="[
-              'size',
+              'pro_size',
               { rules: [{ required: true, message: '请填写商品规格' }] },
             ]"
           >
-            <a-select-option value="1">size1</a-select-option>
-            <a-select-option value="2">size2</a-select-option>
-            <a-select-option value="3">size3</a-select-option>
+            <a-select-option v-for="item in sizeOptions" :key="item.id">{{
+              item.name
+            }}</a-select-option>
           </a-select>
         </a-form-item>
         <a-form-item label="商品现价">
@@ -128,7 +119,7 @@
             type="text"
             placeholder="商品现价"
             v-decorator="[
-              'present_price',
+              'pro_price',
               { rules: [{ required: true, message: '请填写商品现价' }] },
             ]"
           />
@@ -138,7 +129,7 @@
             class="input"
             type="text"
             placeholder="商品原价"
-            v-decorator="['previous_price', (rules = [{ required: false }])]"
+            v-decorator="['pro_old_price', (rules = [{ required: false }])]"
           />
         </a-form-item>
         <a-form-item label="商品库存">
@@ -147,31 +138,30 @@
             type="text"
             placeholder="商品库存"
             v-decorator="[
-              'stock',
+              'pro_stock',
               { rules: [{ required: true, message: '请填写商品库存' }] },
             ]"
           />
         </a-form-item>
         <a-form-item label="商品权重">
-          <!-- <span class="add-on">商品权重</span> -->
           <a-input
             class="input"
             type="text"
             setFieldsValue="0"
-            v-decorator="['priority', (rules = [{ required: true }])]"
+            v-decorator="['pro_priority', (rules = [{ required: true }])]"
           />
         </a-form-item>
         <a-form-item label="文字说明">
-          <!-- <span class="add-on" style="margin-top: 3px">文字说明</span> -->
           <a-textarea
             type="text"
             placeholder="选填"
             style="overflow: auto; vertical-align: top; width: auto"
-            v-decorator="['text_detail', (rules = [{ required: false }])]"
+            v-decorator="['pro_detail', (rules = [{ required: false }])]"
           />
         </a-form-item>
-      </a-modal>
-    </a-form>
+      </a-form>
+    </a-modal> -->
+
     <div :class="advanced ? 'search' : null">
       <a-form layout="horizontal" :form="queryForm" @submit="handleSearch">
         <div :class="advanced ? null : 'fold'">
@@ -197,7 +187,7 @@
               >
                 <a-input
                   style="width: 100%"
-                  placeholder="请输入"
+                  placeholder="请输入商品全名"
                   v-decorator="['pro_name', { rules: [{ required: false }] }]"
                 />
               </a-form-item>
@@ -215,8 +205,12 @@
                     { rules: [{ required: false }] },
                   ]"
                 >
-                  <a-select-option value="类别1">类别1</a-select-option>
-                  <a-select-option value="类别2">类别2</a-select-option>
+                  <a-select-option
+                    v-for="item in navData"
+                    :key="item.id"
+                    :value="item.name"
+                    >{{ item.name }}</a-select-option
+                  >
                 </a-select>
               </a-form-item>
             </a-col>
@@ -228,11 +222,17 @@
                 :labelCol="{ span: 5 }"
                 :wrapperCol="{ span: 18, offset: 1 }"
               >
-                <a-input
-                  style="width: 100%"
-                  placeholder="请输入"
+                <a-select
+                  placeholder="请选择"
                   v-decorator="['pro_color', { rules: [{ required: false }] }]"
-                />
+                >
+                  <a-select-option
+                    v-for="item in colorOptions"
+                    :key="item.id"
+                    :value="item.name"
+                    >{{ item.name }}</a-select-option
+                  >
+                </a-select>
               </a-form-item>
             </a-col>
             <a-col :md="8" :sm="24">
@@ -245,8 +245,12 @@
                   placeholder="请选择"
                   v-decorator="['pro_size', { rules: [{ required: false }] }]"
                 >
-                  <a-select-option value="规格1">规格1</a-select-option>
-                  <a-select-option value="规格2">规格2</a-select-option>
+                  <a-select-option
+                    v-for="item in sizeOptions"
+                    :key="item.id"
+                    :value="item.name"
+                    >{{ item.name }}</a-select-option
+                  >
                 </a-select>
               </a-form-item>
             </a-col>
@@ -269,8 +273,30 @@
         <a-button @click="addNew" type="primary">新增商品</a-button>
         <a-dropdown>
           <a-menu @click="handleMenuClick" slot="overlay">
-            <a-menu-item key="delete">删除</a-menu-item>
-            <a-menu-item key="sale">上架</a-menu-item>
+            <a-menu-item key="delete"
+              ><a-icon type="delete" style="color: #f5222d" />删除</a-menu-item
+            >
+            <a-menu-item key="onSale"
+              ><a-icon
+                type="carry-out"
+                style="color: #7ac35a"
+              />上架</a-menu-item
+            >
+            <a-menu-item key="offSale"
+              ><a-icon
+                type="calendar"
+                style="color: #ffcd43"
+              />下架</a-menu-item
+            >
+            <a-menu-item key="preSale"
+              ><a-icon type="rocket" style="color: #7ac35a" />预售</a-menu-item
+            >
+            <a-menu-item key="isSale"
+              ><a-icon
+                type="thunderbolt"
+                style="color: #ffcd43"
+              />出售</a-menu-item
+            >
           </a-menu>
           <a-button> 批量操作 <a-icon type="down" /> </a-button>
         </a-dropdown>
@@ -286,9 +312,17 @@
         @clear="onClear"
         @change="onChange"
       >
+        <template slot="pro_no" slot-scope="{ text, record }">
+          {{ text }}<br />
+          <span v-if="record.onSale" style="color: #ff8b8c"
+            >已上架<a-icon type="pushpin"
+          /></span>
+          <span v-if="record.preSale" style="color: #ffcd43"
+            >预售中<a-icon type="history"
+          /></span>
+        </template>
         <template
           v-for="col in [
-            'pro_no',
             'pro_name',
             'pro_category',
             'pro_old_price',
@@ -298,73 +332,90 @@
             'pro_stock',
           ]"
           :slot="col"
-          slot-scope="{ text, record }"
+          slot-scope="{ text }"
         >
-          <div :key="col">
-            <a-input
-              v-if="record.editable"
-              :value="text"
-              @change="(e) => handleChange(e.target.value, record.key, col)"
+          {{ text }}
+        </template>
+        <template
+          v-for="(item, index) in ['pro_detail_pic']"
+          slot="pro_detail_pic"
+          slot-scope="{ record }"
+        >
+          <div :key="index">
+            <img
+              :src="record.pro_detail_pic[index].url"
+              style="width: 80px; height: 50px"
             />
-            <span v-else>{{ text }}</span>
           </div>
         </template>
-        <template slot="pro_detail_pic">
-          <template v-for="(item, index) in proList">
-            <div :key="index">
-              <img
-                v-for="(subItem, subIndex) in item.pro_detail_pic"
-                :key="subIndex"
-                style="width: 50px; heigth: 50px; margin-right: 10px"
-                :src="subItem"
-              />
-            </div>
-          </template>
-          <a-upload
-            name="file"
-            :multiple="true"
-            :heade="headers"
-            @change="handleUploadDetail"
-          >
-            <a-button><a-icon type="plus" /></a-button>
-          </a-upload>
+        <template
+          v-for="(item, index) in ['pro_show_pic']"
+          slot="pro_show_pic"
+          slot-scope="{ record }"
+        >
+          <div :key="index">
+            <img
+              :src="record.pro_show_pic[index].url"
+              style="width: 80px; height: 50px"
+            />
+          </div>
         </template>
-        <!-- <template scope="pro_detail_pic">
-          <img v-for="item in pro_detail_pic" :key="item" :src="item" />
-        </template> -->
-        <div slot="pro_show_pic" slot-scope="{ text }">
-          <img style="width: 50px; heigth: 50px" :src="text" />
-        </div>
         <div slot="pro_action" slot-scope="{ record }">
-          <span v-if="record.editable">
-            <a-button @click="() => handleSave(record.key)">保存</a-button>
-            <a-popconfirm
-              title="确定要取消吗?"
-              @confirm="() => handleCancel(record.key)"
+          <a-tooltip placement="top" title="编辑">
+            <a-button
+              type="dashed"
+              shape="circle"
+              style="color: #2353b8"
+              :disabled="editingKey !== ''"
+              @click="() => handleEdit(record.key)"
             >
-              <a-button>取消</a-button>
-            </a-popconfirm>
-            <!-- <a-button @click="() => handleCancel(record.key)">取消</a-button> -->
-          </span>
-          <a-button
-            v-else
-            :disabled="editingKey !== ''"
-            @click="handleEdit(record.key)"
-          >
-            修改 </a-button
-          ><br />
+              <a-icon type="edit" /> </a-button
+          ></a-tooltip>
           <a-popconfirm
             title="确定要删除吗?"
             @confirm="() => deleteRecord(record.key)"
           >
-            <a-button>删除</a-button><br />
+            <a-tooltip placement="top" title="删除">
+              <a-button type="dashed" shape="circle" style="color: #f5222d"
+                ><a-icon type="delete"
+              /></a-button>
+            </a-tooltip>
           </a-popconfirm>
-          <!-- <a-button style="margin-right: 8px" @click="deleteRecord(record.key)">
-            删除 </a-button
-          ><br /> -->
-          <a-button> 上架 </a-button><br />
-          <a-button> 预售 </a-button><br />
-          <a-button @click="addNew"> 新增规格</a-button>
+          <a-tooltip placement="top" :title="!record.onSale ? '上架' : '下架'">
+            <a-button
+              type="dashed"
+              shape="circle"
+              :style="!record.onSale ? 'color: #7ac35a' : 'color:#ffcd43'"
+              @click="
+                !record.onSale
+                  ? handleOnSale(record.key)
+                  : handleOffSale(record.key)
+              "
+              ><a-icon :type="!record.onSale ? 'carry-out' : 'calendar'"
+            /></a-button>
+          </a-tooltip>
+          <a-tooltip placement="top" :title="record.preSale ? '出售' : '预售'">
+            <a-button
+              type="dashed"
+              shape="circle"
+              :style="record.preSale ? 'color: #ffcd43' : 'color:#7ac35a'"
+              @click="
+                record.preSale
+                  ? handleIsSale(record.key)
+                  : handlePreSale(record.key)
+              "
+              ><a-icon :type="record.preSale ? 'thunderbolt' : 'rocket'"
+            /></a-button>
+          </a-tooltip>
+          <a-tooltip placement="top" title="新增规格">
+            <a-button
+              type="dashed"
+              shape="circle"
+              style="color: #2353b8"
+              @click="handleAddSize"
+              ><a-icon type="file-add"
+            /></a-button>
+          </a-tooltip>
         </div>
       </standard-table>
     </div>
@@ -372,61 +423,76 @@
 </template>
 
 <script>
-import StandardTable from "@/components/table/StandardTable";
+import StandardTable from "../../components/table/StandardTable";
 import { export_json_to_excel } from "../../plugins/Export2Excel";
+import _ from "lodash";
+import ProdSubmit from "./components/ProdSubmit.vue";
 
 const columns = [
   {
     title: "编号",
     dataIndex: "pro_no",
     align: "center",
+    width: "100px",
+    fixed: "left",
+    scopedSlots: { customRender: "pro_no" },
   },
   {
     title: "名称",
     dataIndex: "pro_name",
-    scopedSlots: { customRender: "pro_name" },
     align: "center",
+    scopedSlots: { customRender: "pro_name" },
   },
   {
     title: "类别",
     dataIndex: "pro_category",
-    scopedSlots: { customRender: "pro_category" },
+    width: "100px",
     align: "center",
+    scopedSlots: { customRender: "pro_category" },
   },
   {
     title: "原价",
     dataIndex: "pro_old_price",
-    scopedSlots: { customRender: "pro_old_price" },
     align: "center",
+    width: "100px",
+    scopedSlots: { customRender: "pro_old_price" },
   },
   {
     title: "价格",
     dataIndex: "pro_price",
-    scopedSlots: { customRender: "pro_price" },
     align: "center",
+    width: "100px",
+    scopedSlots: { customRender: "pro_price" },
   },
 
   {
     title: "颜色",
     dataIndex: "pro_color",
     align: "center",
+    width: "100px",
     scopedSlots: { customRender: "pro_color" },
   },
   {
     title: "规格",
     dataIndex: "pro_size",
     align: "center",
+    width: "100px",
+    scopedSlots: { customRender: "pro_size" },
   },
   {
     title: "库存",
     dataIndex: "pro_stock",
     align: "center",
+    width: "100px",
+    scopedSlots: { customRender: "pro_stock" },
   },
   {
     title: "销量",
     dataIndex: "pro_sales",
     sorter: true,
     align: "center",
+    width: "100px",
+    scopedSlots: { customRender: "pro_sales" },
   },
 
   {
@@ -445,41 +511,78 @@ const columns = [
     title: "操作",
     dataIndex: "pro_action",
     align: "center",
+    fixed: "right",
     scopedSlots: { customRender: "pro_action" },
   },
 ];
 
 const proList = [
   {
-    key: "1",
+    key: 1,
     pro_no: "1",
-    pro_name: "运费",
-    pro_category: "用品/运费",
+    pro_name: "运运运运运运运费费费费费",
+    pro_name_en: "delivery",
+    pro_category: "类别1",
     pro_price: "0",
     pro_old_price: "0.01",
+    pro_color: "颜色1",
+    pro_size: "规格1",
+    pro_stock: "999",
     pro_sales: "7",
     pro_detail_pic: [
-      require("../../assets/img/logo.png"),
-      require("../../assets/img/logo.png"),
+      {
+        uid: "-1",
+        name: "image.png",
+        status: "done",
+        url:
+          "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
+      },
     ],
-    pro_show_pic: require("../../assets/img/logo.png"),
-    pro_color: "red",
-    pro_size: "1米",
-    pro_stock: "999",
+    pro_show_pic: [
+      {
+        uid: "-1",
+        name: "image.png",
+        status: "done",
+        url:
+          "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
+      },
+    ],
+    pro_priority: "0",
+    pro_detail: "hello world!",
   },
   {
-    key: "2",
+    key: 2,
     pro_no: "2",
     pro_name: "哈哈",
-    pro_category: "用品/衣架",
+    pro_name_en: "haha",
+    pro_category: "类别2",
     pro_price: "0",
     pro_old_price: "0.01",
     pro_sales: "7",
-    pro_detail_pic: [require("../../assets/img/doggy.jpg")],
-    pro_show_pic: require("../../assets/img/logo.png"),
-    pro_color: "red",
-    pro_size: "1米",
+    // pro_detail_pic: [require("../../assets/img/doggy.jpg")],
+    pro_detail_pic: [
+      {
+        uid: "-1",
+        name: "image.png",
+        status: "done",
+        url:
+          "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
+      },
+    ],
+    pro_show_pic: [
+      {
+        uid: "-1",
+        name: "image.png",
+        status: "done",
+        url:
+          "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
+      },
+    ],
+    pro_color: "颜色2",
+    pro_size: "规格2",
     pro_stock: "999",
+    pro_priority: "0",
+    pro_detail: "hello world",
   },
 ];
 const fileList = [];
@@ -517,46 +620,59 @@ const category = [
     ],
   },
 ];
-// const navData = ["父类别1", "父类别2", "父类别3"];
-// const subData = {
-//   父类别1: ["子类别1", "子类别2"],
-//   父类别2: ["子类别1", "子类别2"],
-//   父类别3: ["子类别1", "子类别2"],
-// };
-function getBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = (error) => reject(error);
-  });
-}
+const colorOptions = [
+  {
+    id: 1,
+    name: "颜色1",
+  },
+  {
+    id: 2,
+    name: "颜色2",
+  },
+  {
+    id: 3,
+    name: "颜色3",
+  },
+];
+const sizeOptions = [
+  {
+    id: 1,
+    name: "规格1",
+  },
+  {
+    id: 2,
+    name: "规格2",
+  },
+  {
+    id: 3,
+    name: "规格3",
+  },
+];
 export default {
-  name: "QueryList",
-  components: { StandardTable },
+  name: "product",
+  components: {
+    StandardTable,
+    ProdSubmit,
+  },
   data() {
     return {
-      fileList, //新增商品上传文件
       navData: [], //父类别数组
       subData: [], //子类别
       navId: "",
       subId: "",
       indexNum: 0,
-      previewVisible: false,
-      previewImage: "",
+      // previewVisible: false,
+      // previewImage: "",
+      fileList, //新增商品上传文件
       category,
-      // category_nav: subData[navData[0]],
-      // category_sub: subData[navData[0]][0],
+      colorOptions,
+      sizeOptions,
       advanced: true,
-      columns: columns,
+      columns,
       proList,
-      proShowList: proList,
-      queryParamter: [],
+      proShowList: [],
       selectedRows: [],
-      showEdit: [], //显示编辑框
-      showBtn: [],
       exporting: false,
-      addFormVisible: false,
       importVisible: false,
       confirmLoading: false,
       import_confirmLoading: false,
@@ -612,31 +728,28 @@ export default {
       ],
       editingKey: "", //编辑行
       headers: { authorization: "authorization-text" },
+
+      submitVisible: false,
+      isEdit: false,
+      target: {},
     };
   },
   created() {
-    proList.forEach((item) => {
-      item["editable"] = false;
-    });
-    console.log(proList);
     this.navData = this.category.slice(0, this.category.length);
     this.handleCategory();
-    console.log(this.proList[0].pro_detail_pic);
+    this.proList.forEach((item) => {
+      item["onSale"] = false;
+      item["preSale"] = false;
+    });
+    this.proShowList = JSON.parse(JSON.stringify(this.proList));
   },
   beforeCreate() {
     this.queryForm = this.$form.createForm(this);
     this.addForm = this.$form.createForm(this);
   },
   methods: {
-    handleUploadDetail(info) {
-      if (info.dile.status !== "uploading") {
-        console.log(info.file, info.fileList);
-      }
-      if (info.file.status === "done") {
-        this.$message.success(`${info.file.name} file uploade successfully`);
-      } else if (info.file.status === "error") {
-        this.$message.error(`${info.file.name} file uploade failed`);
-      }
+    closeModal() {
+      this.submitVisible = false;
     },
     handleCategory() {
       for (let i in this.navData.length) {
@@ -655,12 +768,65 @@ export default {
     toggleAdvanced() {
       this.advanced = !this.advanced;
     },
-    remove() {
+    remove(resolve, reject) {
+      // console.log(resolve);
+      console.log(reject);
       this.proShowList = this.proShowList.filter(
         (item) =>
           this.selectedRows.findIndex((row) => row.key === item.key) === -1
       );
+      this.proList = this.proShowList;
       this.selectedRows = [];
+      resolve();
+    },
+    sale(resolve, reject) {
+      console.log(reject);
+      this.proShowList = this.proShowList.filter((item) =>
+        this.selectedRows.filter((row) => row.key === item.key)
+      );
+      this.proShowList.forEach((item) => {
+        item.onSale = true;
+      });
+      this.proList = this.proShowList;
+      resolve();
+    },
+    offSale(resolve, reject) {
+      console.log(reject);
+      this.proShowList = this.proShowList.filter((item) =>
+        this.selectedRows.filter((row) => row.key === item.key)
+      );
+      this.proShowList.forEach((item) => {
+        item.onSale = false;
+      });
+      this.proList = this.proShowList;
+      resolve();
+    },
+    preSale(resolve, reject) {
+      console.log(reject);
+      this.proShowList = this.proShowList.filter((item) =>
+        this.selectedRows.filter((row) => row.key === item.key)
+      );
+      this.proShowList.forEach((item) => {
+        item.preSale = true;
+      });
+      this.proList = this.proShowList;
+      resolve();
+    },
+    isSale(resolve, reject) {
+      if (this.selectedRows && this.selectedRows.length > 0) {
+        this.proShowList = this.proShowList.filter((item) =>
+          this.selectedRows.filter((row) => row.key === item.key)
+        );
+        this.proShowList.forEach((item) => {
+          item.preSale = false;
+        });
+        this.proList = this.proShowList;
+        this.$message.success("批量出售成功");
+        resolve();
+      } else {
+        this.$message.error("未选中数据，无法进行批量操作!");
+        reject();
+      }
     },
     onClear() {
       this.$message.info("您清空了勾选的所有行");
@@ -672,32 +838,98 @@ export default {
       this.$message.info("表格状态改变了");
     },
     addNew() {
-      this.addFormVisible = true;
+      this.submitVisible = true;
+      this.isEdit = false;
     },
     handleSearch(e) {
       e.preventDefault();
-      this.form.validateFields((error, values) => {
-        console.log("error", error);
-        console.log("Received values of form: ", values);
+      this.queryForm.validateFields((error, values) => {
+        const queryKey = [];
+        const queryValue = [];
         if (!error) {
-          this.queryParamter = {
-            pro_no: values.pro_no,
-            pro_name: values.pro_name,
-            pro_category: values.pro_category,
-            pro_color: values.pro_color,
-            pro_size: values.pro_size,
-          };
+          for (let i in values) {
+            if (values[i] === undefined) {
+              continue;
+            } else {
+              queryKey.push(i);
+              queryValue.push(values[i]);
+            }
+          }
         }
-        console.log(this.queryParamter);
+
+        const { proList } = this;
+        const _info = _.cloneDeep(proList);
+        const result = [];
+        if (queryKey.length === 0) {
+          this.proShowList = _info;
+        } else {
+          for (let i in proList) {
+            for (let j in queryKey) {
+              let count = 0;
+              const infoA = proList[i][queryKey[j]];
+              if (
+                queryValue[j] !== undefined &&
+                infoA.indexOf(queryValue[j]) >= 0
+              ) {
+                count = count + 1;
+                if (count === queryKey.length) {
+                  result.push(_info[i]);
+                }
+              }
+            }
+            this.proShowList = result;
+          }
+        }
+        this.$message.success("查询成功");
       });
+      this.queryForm.resetFields();
     },
     handleReset() {
       this.queryForm.resetFields();
     },
-    editAll() {},
     handleMenuClick(e) {
+      const _this = this;
       if (e.key === "delete") {
-        this.remove();
+        this.$confirm({
+          title: "批量删除",
+          content: "你确定要批量删除选中的商品吗？",
+          onOk() {
+            return new Promise((resolve, reject) => {
+              const res = _this.remove(resolve, reject);
+              _this.$message.success("批量删除成功");
+              return res;
+            }).catch(() => console.log("Oops errors!"));
+          },
+          onCancel() {},
+        });
+      }
+      if (e.key === "onSale") {
+        return new Promise((resolve, reject) => {
+          const res = _this.sale(resolve, reject);
+          _this.$message.success("批量上架成功");
+          return res;
+        });
+      }
+      if (e.key === "offSale") {
+        return new Promise((resolve, reject) => {
+          const res = _this.offSale(resolve, reject);
+          _this.$message.success("批量下架成功");
+          return res;
+        });
+      }
+      if (e.key === "preSale") {
+        return new Promise((resolve, reject) => {
+          const res = _this.preSale(resolve, reject);
+          _this.$message.success("批量预售成功");
+          return res;
+        });
+      }
+      if (e.key === "isSale") {
+        return new Promise((resolve, reject) => {
+          const res = _this.isSale(resolve, reject);
+
+          return res;
+        });
       }
     },
     export2Excel() {
@@ -773,56 +1005,14 @@ export default {
     handleImportCancel() {
       this.importVisible = false;
     },
-
     //新增商品
-    handleAddOk() {
-      this.addForm.validateFields((err, value) => {
-        if (!err) {
-          console.log("Received values of form:", value);
-          this.proShowList.splice(this.proShowList.length, 1, value);
-        }
-      });
-      this.confirmLoading = true;
-      setTimeout(() => {
-        this.addFormVisible = false;
-        this.confirmLoading = false;
-        this.addForm.resetFields();
-      }, 2000);
-    },
-    handleAddCancel() {
-      this.addFormVisible = false;
-    },
-    handleCancelPic() {
-      this.previewVisible = false;
-    },
-    handleCateChange(value) {
-      console.log(value);
-    },
-    async handlePreview(file) {
-      if (!file.url && !file.preview) {
-        file.preview = await getBase64(file.originFileObj);
-      }
-      this.previewImage = file.url || file.preview;
-      this.previewVisible = true;
-    },
-    handleChangePic({ fileList }) {
-      this.fileList = fileList;
-      console.log(this.fileList);
-    },
-    handleNavChange(value) {
-      const result = [];
-      var that = this;
-      that.info = that.raw_List;
-      for (let i = 0; i < that.raw_List.length; i++) {
-        var infoA = that.raw_List[i];
-        if (infoA.category.indexOf(value.label) != -1) {
-          result.push(that.info[i]);
-        }
-        if (value.label == "全部") {
-          result.push(that.raw_List[i]);
-        }
-      }
-      that.info = result;
+    handleAddOk(value) {
+      const { proList } = this;
+      value.key = proList.length + 1;
+      value.pro_no = proList.length + 1;
+      proList.push(value);
+      console.log(this.proList);
+      this.proShowList = Object.assign(this.proShowList, proList);
     },
     handleImportChange(info) {
       if (info.file.status !== "uploading") {
@@ -851,7 +1041,7 @@ export default {
             pro_stock: item.stock,
           });
         });
-        this.list = info.file.response.data;
+        this.uploadData = info.file.response.data;
         console.log(this.uploadData);
       } else if (
         info.file.response &&
@@ -869,50 +1059,90 @@ export default {
         });
       }
     },
-    handleChange(value, key, column) {
+    ToggleTarget(key, k) {
       const newData = [...this.proList];
-      const target = newData.filter((item) => key === item.key)[0];
+      const target = newData.filter((item) => item.key === key)[0];
       if (target) {
-        target[column] = value;
-        this.proList = newData;
+        target.k = !target[k];
+        (this.proList = newData), (this.proShowList = newData);
       }
+      console.log(target);
     },
     handleEdit(key) {
+      this.isEdit = true;
       const newData = [...this.proList];
-      const target = newData.filter((item) => key === item.key)[0];
-      this.editingKey = key;
-      if (target) {
-        target.editable = true;
-        this.proList = newData;
-      }
+      this.target = newData.filter((item) => item.key === key)[0];
+      console.log(this.target);
+      this.submitVisible = true;
     },
-    handleSave(key) {
+    handleAddSize(key) {
       const newData = [...this.proList];
-      const newShowData = [...this.proShowList];
-      const target = newData.filter((item) => key === item.key)[0];
-      const targetShow = newShowData.filter((item) => key === item.key)[0];
-      if (target && targetShow) {
-        target.editable = false;
-        this.proList = newData;
-        Object.assign(targetShow, target);
-        this.proShowList = newShowData;
-      }
-      this.editingKey = "";
-      console.log("proList: " + this.proList);
-      console.log("proShowList: " + this.proShowList);
+      this.target = newData.filter((item) => item.key === key)[0];
+      console.log(this.target);
+      this.submitVisible = true;
     },
-    handleCancel(key) {
+    handleBeforeUploadXlsx(file) {
+      return new Promise((resolve, reject) => {
+        const isXlsx = file.name.endsWith(".xlsx");
+        const isXlx = file.name.endsWith(".xlx");
+        if (!(isXlsx || isXlx)) {
+          this.$message.error("只能上传xlx和xlsx格式的文件");
+          return reject(false);
+        }
+        return resolve(true);
+      });
+    },
+    handleOnSale(key) {
       const newData = [...this.proList];
-      const target = newData.filter((item) => key === item.key)[0];
-      this.editingKey = "";
+      const target = [...this.proList].filter((item) => item.key === key)[0];
       if (target) {
-        Object.assign(
-          target,
-          this.proShowList.filter((item) => key === item.key)[0]
-        );
-        target.editable = false;
+        target.onSale = true;
         this.proList = newData;
+        this.proShowList = newData;
       }
+      this.$notification.success({
+        message: "上架成功",
+        duration: 1.5,
+      });
+    },
+    handleOffSale(key) {
+      const newData = [...this.proList];
+      const target = [...this.proList].filter((item) => item.key === key)[0];
+      if (target) {
+        target.onSale = false;
+        this.proList = newData;
+        this.proShowList = newData;
+      }
+      this.$notification.success({
+        message: "下架成功",
+        duration: 1.5,
+      });
+    },
+    handlePreSale(key) {
+      const newData = [...this.proList];
+      const target = [...this.proList].filter((item) => item.key === key)[0];
+      if (target) {
+        target.preSale = true;
+        this.proList = newData;
+        this.proShowList = newData;
+      }
+      this.$notification.success({
+        message: "预售成功",
+        duration: 1.5,
+      });
+    },
+    handleIsSale(key) {
+      const newData = [...this.proList];
+      const target = [...this.proList].filter((item) => item.key === key)[0];
+      if (target) {
+        target.preSale = false;
+        this.proList = newData;
+        this.proShowList = newData;
+      }
+      this.$notification.success({
+        message: "出售成功",
+        duration: 1.5,
+      });
     },
   },
 };
@@ -934,5 +1164,11 @@ export default {
   .fold {
     width: 100%;
   }
+}
+showuploadlist {
+  showremoveicon: false;
+}
+.uploadModal {
+  height: 30px;
 }
 </style>

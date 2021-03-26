@@ -125,6 +125,7 @@ export default {
           this.$message.info("搜索失败，请检查用户昵称是否存在");
         }
       }
+      console.log(result);
       this.searchInfo = result;
     },
   },

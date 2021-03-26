@@ -1,94 +1,79 @@
 <template>
   <common-layout>
     <div class="login">
+      <div class="title-container"><h3 class="title">后台通用系统</h3></div>
       <a-form @submit="onSubmit" :form="form">
-        <a-tabs
-          size="large"
-          :tabBarStyle="{ textAlign: 'center' }"
-          style="padding: 0 2px"
+        <a-alert
+          type="error"
+          :closable="true"
+          v-show="error"
+          :message="error"
+          showIcon
+          style="margin-bottom: 24px"
+        />
+        <a-form-item>
+          <a-input
+            autocomplete="autocomplete"
+            size="large"
+            placeholder="用户名"
+            allow-clear
+            v-decorator="[
+              'username',
+              {
+                rules: [{ required: true, message: '请输入用户名' }],
+              },
+            ]"
+          >
+            <a-icon slot="prefix" type="user" />
+          </a-input>
+        </a-form-item>
+        <a-tooltip
+          v-model="capsTooltip"
+          title="开启大写"
+          placement="right"
+          trigger="mouseleave"
+          :visible="toolTipVisible"
         >
-          <a-tab-pane tab="账户密码登录" key="1">
-            <a-alert
-              type="error"
-              :closable="true"
-              v-show="error"
-              :message="error"
-              showIcon
-              style="margin-bottom: 24px"
-            />
-            <a-form-item>
-              <a-input
-                autocomplete="autocomplete"
-                size="large"
-                placeholder="admin"
-                v-decorator="[
-                  'name',
-                  {
-                    rules: [
-                      {
-                        required: true,
-                        message: '请输入账户名',
-                        whitespace: true,
-                      },
-                    ],
-                  },
-                ]"
-              >
-                <a-icon slot="prefix" type="user" />
-              </a-input>
-            </a-form-item>
-            <a-form-item>
-              <a-input
-                size="large"
-                placeholder="888888"
-                autocomplete="autocomplete"
-                type="password"
-                v-decorator="[
-                  'password',
-                  {
-                    rules: [
-                      {
-                        required: true,
-                        message: '请输入密码',
-                        whitespace: true,
-                      },
-                    ],
-                  },
-                ]"
-              >
-                <a-icon slot="prefix" type="lock" />
-              </a-input>
-            </a-form-item>
-          </a-tab-pane>
-          <a-tab-pane tab="手机号登录" key="2">
-            <a-form-item>
-              <a-input size="large" placeholder="mobile number">
-                <a-icon slot="prefix" type="mobile" />
-              </a-input>
-            </a-form-item>
-            <a-form-item>
-              <a-row :gutter="8" style="margin: 0 -4px">
-                <a-col :span="16">
-                  <a-input size="large" placeholder="captcha">
-                    <a-icon slot="prefix" type="mail" />
-                  </a-input>
-                </a-col>
-                <a-col :span="8" style="padding-left: 4px">
-                  <a-button
-                    style="width: 100%"
-                    class="captcha-button"
-                    size="large"
-                    >获取验证码</a-button
-                  >
-                </a-col>
-              </a-row>
-            </a-form-item>
-          </a-tab-pane>
-        </a-tabs>
-        <div>
-          <a-checkbox :checked="true">自动登录</a-checkbox>
-          <a style="float: right">忘记密码</a>
-        </div>
+          <a-form-item>
+            <a-input
+              size="large"
+              ref="password"
+              placeholder="密码"
+              autocomplete="autocomplete"
+              v-decorator="[
+                'password',
+                {
+                  rules: [
+                    {
+                      required: true,
+                      message: '密码不能为空',
+                    },
+                    {
+                      max: 15,
+                      message: '密码必须在4-15个字符之间',
+                    },
+                    {
+                      min: 4,
+                      message: '密码必须在4-15个字符之间',
+                    },
+                  ],
+                },
+              ]"
+              :type="passwordType"
+              @keyup.native="checkCapslock"
+              @blur="capsTooltip = false"
+              allow-clear
+            >
+              <a-icon slot="prefix" type="lock" />
+            </a-input>
+            <span class="show-pwd" @click="showPwd">
+              <a-icon
+                :type="passwordType === 'password' ? 'eye' : 'eye-invisible'"
+              />
+            </span>
+          </a-form-item>
+        </a-tooltip>
+
         <a-form-item>
           <a-button
             :loading="logging"
@@ -99,14 +84,8 @@
             >登录</a-button
           >
         </a-form-item>
-        <div>
-          其他登录方式
-          <a-icon class="icon" type="alipay-circle" />
-          <a-icon class="icon" type="taobao-circle" />
-          <a-icon class="icon" type="weibo-circle" />
-          <router-link style="float: right" to="/welcome">注册账户</router-link>
-        </div>
       </a-form>
+      <a style="float: right; right: 120px" @click="forgetPwd">忘记密码</a>
     </div>
   </common-layout>
 </template>
@@ -121,11 +100,15 @@ import { mapMutations } from "vuex";
 export default {
   name: "Login",
   components: { CommonLayout },
+
   data() {
     return {
       logging: false,
       error: "",
       form: this.$form.createForm(this),
+      capsTooltip: false,
+      passwordType: "password",
+      toolTipVisible: false,
     };
   },
   computed: {
@@ -134,15 +117,34 @@ export default {
     },
   },
   methods: {
+    checkCapslock(e) {
+      this.toolTipVisible = true;
+      const { key } = e;
+      this.capsTooltip = key && key.length === 1 && key >= "A" && key <= "Z";
+    },
+    showPwd() {
+      if (this.passwordType === "password") {
+        this.passwordType = "";
+      } else {
+        this.passwordType = "password";
+      }
+      this.$nextTick(() => {
+        this.$refs.password.focus();
+      });
+    },
+    forgetPwd() {
+      this.$message.error("该账号未绑定邮箱，请先联系管理员");
+    },
+
     ...mapMutations("account", ["setUser", "setPermissions", "setRoles"]),
     onSubmit(e) {
       e.preventDefault();
       this.form.validateFields((err) => {
         if (!err) {
           this.logging = true;
-          const name = this.form.getFieldValue("name");
+          const username = this.form.getFieldValue("username");
           const password = this.form.getFieldValue("password");
-          login(name, password).then(this.afterLogin);
+          login(username, password).then(this.afterLogin);
         }
       });
     },
@@ -166,7 +168,8 @@ export default {
           this.$message.success(loginRes.message, 3);
         });
       } else {
-        this.error = loginRes.message;
+        // this.error = loginRes.message;
+        this.$message.error(loginRes.message);
       }
     },
   },
@@ -186,6 +189,18 @@ export default {
         font-size: 14px;
       }
     }
+    .title-container {
+      position: relative;
+
+      .title {
+        font-size: 26px;
+        color: #666;
+        margin: 0px auto 40px auto;
+        text-align: center;
+        font-weight: bold;
+      }
+    }
+
     .icon {
       font-size: 24px;
       color: @text-color-second;
@@ -197,6 +212,13 @@ export default {
       &:hover {
         color: @primary-color;
       }
+    }
+    .show-pwd {
+      position: absolute;
+      right: 30px;
+      font-size: 16px;
+      cursor: pointer;
+      color: rgba(0, 0, 0, 0.25);
     }
   }
 }
