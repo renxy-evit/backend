@@ -4,12 +4,12 @@
       :action="action"
       :headers="headers"
       list-type="picture-card"
-      :file-list="fileList"
       :multiple="true"
       :before-upload="beforeUpload"
       :remove="onRemove"
       @change="handleChange"
       @preview="handlePreview"
+      :showUploadList="false"
     >
       <div>
         <a-icon type="plus" />
@@ -32,14 +32,6 @@ function getBase64(file) {
   });
 }
 export default {
-  props: {
-    fileList: {
-      type: Array,
-      default() {
-        return [];
-      },
-    },
-  },
   data() {
     return {
       action: `https://www.mocky.io/v2/5cc8019d300000980a055e76`,
@@ -65,10 +57,14 @@ export default {
       this.previewImage = file.url || file.preview;
       this.previewVisible = true;
     },
-    handleChange(file, fileList) {
-      this.fileList = fileList;
-      console.log(fileList);
-      console.log(file);
+    handleChange({ file }) {
+      if (file && file.status === "done") {
+        // this.fileList.push(file.response);
+        // console.log(file);
+        this.$emit("handleChange", file.response);
+      } else if (file.status === "error") {
+        this.$message.error(file.name + "图片上传失败!");
+      }
     },
     beforeUpload(file) {
       return new Promise((resolve, reject) => {

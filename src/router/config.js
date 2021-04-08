@@ -40,9 +40,22 @@ const options = {
           path: 'user',
           name: '用户管理',
           meta: {
-            icon: 'user'
+            invisible: true
           },
-          component: () => import('@/pages/User')
+          component: BlankView,
+          children: [
+            {
+              path: 'showUser',
+              name: '个人中心',
+
+              component: () => import('@/pages/user/ShowUser')
+            },
+            {
+              path: 'setUser',
+              name: '账号设置',
+              component: () => import('@/pages/user/SetUser')
+            }
+          ]
         },
         {
           path: 'goods',
@@ -66,6 +79,11 @@ const options = {
               path: 'size',
               name: '规格管理',
               component: () => import('@/pages/goods/Size')
+            },
+            {
+              path: 'category',
+              name: '类别管理',
+              component: () => import('@/pages/goods/Category')
             }
           ]
         },
@@ -99,7 +117,7 @@ const options = {
             },
             {
               path: 'unrefund',
-              name: '未退款',
+              name: '待退款',
               component: () => import('@/pages/orders/Unrefund')
             },
             {
@@ -115,7 +133,7 @@ const options = {
           ]
         },
         {
-          path: 'rewards',
+          path: 'rebate',
           name: '奖励申请',
           meta: {
             icon: 'money-collect'
@@ -123,29 +141,21 @@ const options = {
           component: BlankView,
           children: [
             {
-              path: 'unreward',
+              path: 'Unrebate',
               name: '未申请',
-              component: () => import('@/pages/rewards/Unreward')
+              component: () => import('@/pages/rebate/Unrebate')
             },
             {
-              path: 'rewarding',
+              path: 'Rebating',
               name: '申请中',
-              component: () => import('@/pages/rewards/Rewarding')
+              component: () => import('@/pages/rebate/Rebating')
             },
             {
-              path: 'rewarded',
+              path: 'Rebated',
               name: '已发放',
-              component: () => import('@/pages/rewards/Rewarded')
+              component: () => import('@/pages/rebate/Rebated')
             },
           ]
-        },
-        {
-          path: 'admin',
-          name: '账号管理',
-          meta: {
-            icon: 'setting'
-          },
-          component: () => import('@/pages/admin/Admin')
         },
         {
           path: 'setting',
@@ -155,14 +165,6 @@ const options = {
           },
           component: () => import('@/pages/setting/Setting')
         },
-        {
-          path: 'logout',
-          name: '退出登录',
-          meta: {
-            icon: 'poweroff',
-            link: 'http://localhost:8081'
-          }
-        }
       ]
     },
   ],

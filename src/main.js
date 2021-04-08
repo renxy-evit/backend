@@ -12,6 +12,7 @@ import { initI18n } from '@/utils/i18n'
 import bootstrap from '@/bootstrap'
 import 'moment/locale/zh-cn'
 import vcolorpicker from 'vcolorpicker'
+import vuedraggable from 'vuedraggable'
 
 const router = initRouter(store.state.setting.asyncRoutes)
 const i18n = initI18n('CN', 'US')
@@ -21,6 +22,7 @@ Vue.config.productionTip = false
 Vue.use(Viser)
 Vue.use(Plugins)
 Vue.use(vcolorpicker)
+Vue.use(vuedraggable)
 
 bootstrap({ router, store, i18n, message: Vue.prototype.$message })
 
@@ -29,5 +31,6 @@ new Vue({
   store,
   i18n,
   vcolorpicker,
+  vuedraggable,
   render: h => h(App),
 }).$mount('#app')

@@ -27,172 +27,78 @@
     </a-modal>
 
     <prod-submit
-      :is-edit="isEdit"
+      :isEdit="isEdit"
       :target="target"
       :visible="submitVisible"
       @closeModal="closeModal"
       @getSubmitInfo="handleAddOk"
-    ></prod-submit>
-    <!-- <a-modal
-      :visible="addFormVisible"
-      :confirm-loading="confirmLoading"
-      @ok="handleAddOk"
-      @cancel="handleAddCancel"
-    >
-      <a-form :form="addForm" layout="horizontal">
-        <a-form-item label="商品名称、英文名">
-          <a-input
-            class="input"
-            placeholder="商品名称（必填）"
-            v-decorator="[
-              'pro_name',
-              { rules: [{ required: true, message: '请填写商品名称' }] },
-            ]"
-          />
-          <a-input class="input" placeholder="商品英文名（选填）" />
-        </a-form-item>
-        <a-form-item label="商品类别" style="display: inline-block">
-          <a-select
-            class="select"
-            placeholder="请选择"
-            v-decorator="[
-              'category_nav',
-              { rules: [{ required: true, message: '请填写商品分类' }] },
-            ]"
-          >
-            <a-select-option
-              v-for="nav in navData"
-              :key="nav.id"
-              :value="nav.name"
-              >{{ nav.name }}</a-select-option
-            >
-          </a-select>
-        </a-form-item>
-        <a-form-item style="display: inline-block; margin-top: 38px">
-          <a-select
-            class="select"
-            placeholder="请选择"
-            v-decorator="[
-              'category_sub',
-              { rules: [{ required: false, message: '请填写商品分类' }] },
-            ]"
-          >
-            <a-select-option
-              v-for="sub in subData"
-              :key="sub.id"
-              :value="sub.name"
-              >{{ sub.name }}</a-select-option
-            >
-          </a-select>
-        </a-form-item>
-        <a-form-item label="商品颜色">
-          <a-select
-            class="select"
-            placeholder="请选择"
-            v-decorator="[
-              'pro_color',
-              { rules: [{ required: true, message: '请填写商品颜色' }] },
-            ]"
-          >
-            <a-select-option v-for="item in colorOptions" :key="item.id">{{
-              item.name
-            }}</a-select-option>
-          </a-select>
-        </a-form-item>
-        <a-form-item label="商品规格">
-          <a-select
-            class="select"
-            placeholder="请选择"
-            v-decorator="[
-              'pro_size',
-              { rules: [{ required: true, message: '请填写商品规格' }] },
-            ]"
-          >
-            <a-select-option v-for="item in sizeOptions" :key="item.id">{{
-              item.name
-            }}</a-select-option>
-          </a-select>
-        </a-form-item>
-        <a-form-item label="商品现价">
-          <a-input
-            class="input"
-            type="text"
-            placeholder="商品现价"
-            v-decorator="[
-              'pro_price',
-              { rules: [{ required: true, message: '请填写商品现价' }] },
-            ]"
-          />
-        </a-form-item>
-        <a-form-item label="商品原价">
-          <a-input
-            class="input"
-            type="text"
-            placeholder="商品原价"
-            v-decorator="['pro_old_price', (rules = [{ required: false }])]"
-          />
-        </a-form-item>
-        <a-form-item label="商品库存">
-          <a-input
-            class="input"
-            type="text"
-            placeholder="商品库存"
-            v-decorator="[
-              'pro_stock',
-              { rules: [{ required: true, message: '请填写商品库存' }] },
-            ]"
-          />
-        </a-form-item>
-        <a-form-item label="商品权重">
-          <a-input
-            class="input"
-            type="text"
-            setFieldsValue="0"
-            v-decorator="['pro_priority', (rules = [{ required: true }])]"
-          />
-        </a-form-item>
-        <a-form-item label="文字说明">
-          <a-textarea
-            type="text"
-            placeholder="选填"
-            style="overflow: auto; vertical-align: top; width: auto"
-            v-decorator="['pro_detail', (rules = [{ required: false }])]"
-          />
-        </a-form-item>
-      </a-form>
-    </a-modal> -->
+    />
+    <prod-submit
+      :isEdit="isEdit"
+      :target="target"
+      :visible="editVisible"
+      @closeEditModal="closeEditModal"
+      @getSubmitInfo="handleUpdateOk"
+    />
+    <prod-submit
+      :isEdit="isEdit"
+      :target="target"
+      :visible="submitSizeVisible"
+      @closeModal="closeSizeModal"
+      @getSubmitInfo="handleUpdateSize"
+    />
+    <pic-show
+      :visible="showVisible"
+      :picList="showPicList"
+      @closePicModal="closeShowModal"
+    />
+    <pic-show
+      :visible="detailVisible"
+      :picList="detailPicList"
+      @closePicModal="closeDetailModal"
+    />
 
-    <div :class="advanced ? 'search' : null">
-      <a-form layout="horizontal" :form="queryForm" @submit="handleSearch">
-        <div :class="advanced ? null : 'fold'">
+    <div>
+      <a-form
+        layout="horizontal"
+        :form="queryForm"
+        @submit.prevent="handleSearch"
+      >
+        <div>
           <a-row>
-            <a-col :md="8" :sm="24">
+            <a-col :md="6" :sm="24" style="margin-right: 5px">
               <a-form-item
                 label="商品编号"
+                v-model="listQuery.pro_no"
                 :labelCol="{ span: 5 }"
                 :wrapperCol="{ span: 18, offset: 1 }"
               >
                 <a-input
+                  allow-clear
                   v-decorator="['pro_no', { rules: [{ required: false }] }]"
-                  style="width: 100%"
+                  style="width: 100%; margin-right: 5px"
                   placeholder="请输入"
+                  autocomplete="off"
                 />
               </a-form-item>
             </a-col>
-            <a-col :md="8" :sm="24">
+            <a-col :md="6" :sm="24" style="margin-right: 5px">
               <a-form-item
                 label="商品名称"
+                v-model="listQuery.pro_name"
                 :labelCol="{ span: 5 }"
                 :wrapperCol="{ span: 18, offset: 1 }"
               >
                 <a-input
-                  style="width: 100%"
+                  allow-clear
+                  autocomplete="off"
+                  style="width: 100%,margin-right: 5px"
                   placeholder="请输入商品全名"
                   v-decorator="['pro_name', { rules: [{ required: false }] }]"
                 />
               </a-form-item>
             </a-col>
-            <a-col :md="8" :sm="24">
+            <a-col :md="6" :sm="24" style="margin-right: 5px">
               <a-form-item
                 label="商品类别"
                 :labelCol="{ span: 5 }"
@@ -204,6 +110,7 @@
                     'pro_category',
                     { rules: [{ required: false }] },
                   ]"
+                  style="margin-right: 5px"
                 >
                   <a-select-option
                     v-for="item in navData"
@@ -214,62 +121,25 @@
                 </a-select>
               </a-form-item>
             </a-col>
-          </a-row>
-          <a-row v-if="advanced">
-            <a-col :md="8" :sm="24">
-              <a-form-item
-                label="商品颜色"
-                :labelCol="{ span: 5 }"
-                :wrapperCol="{ span: 18, offset: 1 }"
-              >
-                <a-select
-                  placeholder="请选择"
-                  v-decorator="['pro_color', { rules: [{ required: false }] }]"
+            <a-col :md="3" :sm="24" style="margin-left: 50px">
+              <span>
+                <a-button
+                  type="primary"
+                  html-type="submit"
+                  style="margin-top: 3px"
+                  >查询</a-button
                 >
-                  <a-select-option
-                    v-for="item in colorOptions"
-                    :key="item.id"
-                    :value="item.name"
-                    >{{ item.name }}</a-select-option
-                  >
-                </a-select>
-              </a-form-item>
-            </a-col>
-            <a-col :md="8" :sm="24">
-              <a-form-item
-                label="商品规格"
-                :labelCol="{ span: 5 }"
-                :wrapperCol="{ span: 18, offset: 1 }"
-              >
-                <a-select
-                  placeholder="请选择"
-                  v-decorator="['pro_size', { rules: [{ required: false }] }]"
+                <a-button
+                  style="margin-left: 8px; margin-top: 3px"
+                  @click="handleReset"
+                  >重置</a-button
                 >
-                  <a-select-option
-                    v-for="item in sizeOptions"
-                    :key="item.id"
-                    :value="item.name"
-                    >{{ item.name }}</a-select-option
-                  >
-                </a-select>
-              </a-form-item>
+              </span>
             </a-col>
           </a-row>
         </div>
-        <span style="float: right; margin-top: 3px">
-          <a-button type="primary" html-type="submit">查询</a-button>
-          <a-button style="margin-left: 8px" @click="handleReset"
-            >重置</a-button
-          >
-          <a @click="toggleAdvanced" style="margin-left: 8px">
-            {{ advanced ? "收起" : "展开" }}
-            <a-icon :type="advanced ? 'up' : 'down'" />
-          </a>
-        </span>
       </a-form>
-    </div>
-    <div>
-      <a-space class="operator">
+      <a-space class="operator search">
         <a-button @click="addNew" type="primary">新增商品</a-button>
         <a-dropdown>
           <a-menu @click="handleMenuClick" slot="overlay">
@@ -305,15 +175,19 @@
           >导出Excel</a-button
         >
       </a-space>
+    </div>
+    <div>
       <standard-table
         :columns="columns"
         :dataSource="proShowList"
         :selectedRows.sync="selectedRows"
+        :scroll="{ x: 1500 }"
         @clear="onClear"
         @change="onChange"
       >
         <template slot="pro_no" slot-scope="{ text, record }">
-          {{ text }}<br />
+          <span v-if="!getTableSub(record.key, proList)">{{ text }}</span
+          ><br />
           <span v-if="record.onSale" style="color: #ff8b8c"
             >已上架<a-icon type="pushpin"
           /></span>
@@ -321,10 +195,14 @@
             >预售中<a-icon type="history"
           /></span>
         </template>
+        <template slot="pro_name" slot-scope="{ text, record }">
+          <span v-if="!getTableSub(record.key, proList)">{{ text }}</span>
+        </template>
+        <template slot="pro_category" slot-scope="{ text, record }">
+          <span v-if="!getTableSub(record.key, proList)">{{ text }}</span>
+        </template>
         <template
           v-for="col in [
-            'pro_name',
-            'pro_category',
             'pro_old_price',
             'pro_price',
             'pro_color',
@@ -336,27 +214,23 @@
         >
           {{ text }}
         </template>
-        <template
-          v-for="(item, index) in ['pro_detail_pic']"
-          slot="pro_detail_pic"
-          slot-scope="{ record }"
-        >
-          <div :key="index">
+        <template slot="pro_detail_pic" slot-scope="{ record }">
+          <div>
             <img
-              :src="record.pro_detail_pic[index].url"
+              class="show"
+              :src="record.pro_detail_pic[0].url"
               style="width: 80px; height: 50px"
+              @click="handleDetailPicClick(record.key)"
             />
           </div>
         </template>
-        <template
-          v-for="(item, index) in ['pro_show_pic']"
-          slot="pro_show_pic"
-          slot-scope="{ record }"
-        >
-          <div :key="index">
+        <template slot="pro_show_pic" slot-scope="{ record }">
+          <div>
             <img
-              :src="record.pro_show_pic[index].url"
+              class="show"
+              :src="record.pro_show_pic[0].url"
               style="width: 80px; height: 50px"
+              @click="handleShowPicClick(record.key)"
             />
           </div>
         </template>
@@ -372,7 +246,7 @@
               <a-icon type="edit" /> </a-button
           ></a-tooltip>
           <a-popconfirm
-            title="确定要删除吗?"
+            title="该规格所有商品都将被删除，确定要删除吗?"
             @confirm="() => deleteRecord(record.key)"
           >
             <a-tooltip placement="top" title="删除">
@@ -407,12 +281,16 @@
               ><a-icon :type="record.preSale ? 'thunderbolt' : 'rocket'"
             /></a-button>
           </a-tooltip>
-          <a-tooltip placement="top" title="新增规格">
+          <a-tooltip
+            placement="top"
+            title="新增规格"
+            v-if="!getTableSub(record.key, proList)"
+          >
             <a-button
               type="dashed"
               shape="circle"
               style="color: #2353b8"
-              @click="handleAddSize"
+              @click="handleAddSize(record.key)"
               ><a-icon type="file-add"
             /></a-button>
           </a-tooltip>
@@ -427,6 +305,7 @@ import StandardTable from "../../components/table/StandardTable";
 import { export_json_to_excel } from "../../plugins/Export2Excel";
 import _ from "lodash";
 import ProdSubmit from "./components/ProdSubmit.vue";
+import PicShow from "./components/PicShow.vue";
 
 const columns = [
   {
@@ -520,11 +399,13 @@ const proList = [
   {
     key: 1,
     pro_no: "1",
+    onSale: false,
+    preSale: false,
     pro_name: "运运运运运运运费费费费费",
     pro_name_en: "delivery",
     pro_category: "类别1",
-    pro_price: "0",
-    pro_old_price: "0.01",
+    pro_price: "1",
+    pro_old_price: "1.5",
     pro_color: "颜色1",
     pro_size: "规格1",
     pro_stock: "999",
@@ -532,6 +413,13 @@ const proList = [
     pro_detail_pic: [
       {
         uid: "-1",
+        name: "image.png",
+        status: "done",
+        url:
+          "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
+      },
+      {
+        uid: "-2",
         name: "image.png",
         status: "done",
         url:
@@ -546,20 +434,93 @@ const proList = [
         url:
           "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
       },
+      {
+        uid: "-2",
+        name: "image.png",
+        status: "done",
+        url:
+          "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
+      },
+      {
+        uid: "-3",
+        name: "image.png",
+        status: "done",
+        url:
+          "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
+      },
     ],
     pro_priority: "0",
     pro_detail: "hello world!",
+    children: [
+      {
+        key: 3,
+        onSale: false,
+        preSale: false,
+        pro_no: "3",
+        pro_name: "运运运运运运运费费费费费",
+        pro_name_en: "delivery",
+        pro_category: "类别1",
+        pro_price: "1",
+        pro_old_price: "1.5",
+        pro_color: "颜色1",
+        pro_size: "规格2",
+        pro_stock: "999",
+        pro_sales: "7",
+        pro_detail_pic: [
+          {
+            uid: "-1",
+            name: "image.png",
+            status: "done",
+            url:
+              "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
+          },
+          {
+            uid: "-2",
+            name: "image.png",
+            status: "done",
+            url:
+              "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
+          },
+        ],
+        pro_show_pic: [
+          {
+            uid: "-1",
+            name: "image.png",
+            status: "done",
+            url:
+              "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
+          },
+          {
+            uid: "-2",
+            name: "image.png",
+            status: "done",
+            url:
+              "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
+          },
+          {
+            uid: "-3",
+            name: "image.png",
+            status: "done",
+            url:
+              "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
+          },
+        ],
+        pro_priority: "0",
+        pro_detail: "hello world!",
+      },
+    ],
   },
   {
     key: 2,
+    onSale: false,
+    preSale: false,
     pro_no: "2",
     pro_name: "哈哈",
     pro_name_en: "haha",
     pro_category: "类别2",
-    pro_price: "0",
-    pro_old_price: "0.01",
+    pro_price: "10",
+    pro_old_price: "15",
     pro_sales: "7",
-    // pro_detail_pic: [require("../../assets/img/doggy.jpg")],
     pro_detail_pic: [
       {
         uid: "-1",
@@ -653,6 +614,7 @@ export default {
   components: {
     StandardTable,
     ProdSubmit,
+    PicShow,
   },
   data() {
     return {
@@ -730,26 +692,157 @@ export default {
       headers: { authorization: "authorization-text" },
 
       submitVisible: false,
+      editVisible: false,
+      submitSizeVisible: false,
       isEdit: false,
       target: {},
+      listQuery: {},
+      selectKey: "",
+      showVisible: false,
+      detailVisible: false,
+      showPicList: [],
+      detailPicList: [],
     };
+  },
+  beforeCreate() {
+    this.queryForm = this.$form.createForm(this);
   },
   created() {
     this.navData = this.category.slice(0, this.category.length);
     this.handleCategory();
-    this.proList.forEach((item) => {
-      item["onSale"] = false;
-      item["preSale"] = false;
-    });
     this.proShowList = JSON.parse(JSON.stringify(this.proList));
   },
-  beforeCreate() {
-    this.queryForm = this.$form.createForm(this);
-    this.addForm = this.$form.createForm(this);
-  },
   methods: {
+    closeShowModal() {
+      this.showVisible = false;
+    },
+    closeDetailModal() {
+      this.detailVisible = false;
+    },
+    handleDetailPicClick(key) {
+      this.detailVisible = true;
+      const newData = [...this.proList];
+      const target = newData.filter((item) => item.key === key)[0];
+      if (target && target.pro_detail_pic) {
+        this.detailPicList = target.pro_detail_pic;
+      }
+    },
+    handleShowPicClick(key) {
+      this.showVisible = true;
+      const newData = [...this.proList];
+      const target = this.getTarget(key, newData);
+      console.log(target);
+      if (target && target.pro_show_pic) {
+        this.showPicList = target.pro_show_pic;
+      }
+    },
+    getTarget(key, array) {
+      let target = {};
+      for (let i of array) {
+        if (i.key === key) {
+          target = i;
+        } else {
+          if (i.children && i.children.length > 0) {
+            for (let j of i.children) {
+              if (j.key === key) {
+                target = j;
+              }
+            }
+          }
+        }
+      }
+      return target;
+    },
+    getDelTarget(key, array) {
+      let target = [];
+      console.log(key);
+      for (let i of array) {
+        if (i.key !== key && !i.children) {
+          target.push(i);
+        } else {
+          if (i.key !== key && i.children && i.children.length > 0) {
+            for (let j in i.children) {
+              if (i.key !== key && i.children[j].key !== key) {
+                target.push(i);
+              } else {
+                i.key !== key && i.children[j].key === key;
+              }
+              {
+                i.children.splice(j, 1);
+                target.push(i);
+              }
+            }
+          }
+        }
+      }
+      console.log(target);
+      return target;
+    },
+    getCurrentKey() {
+      let count = 0;
+      this.proList.forEach((item) => {
+        if (item.children) {
+          item.children.forEach((subitem) => {
+            if (subitem.key) {
+              count = count + 1;
+            }
+          });
+        }
+        count = count + 1;
+      });
+      return count;
+    },
+    getTableNav(key, array) {
+      for (let i in array) {
+        if (array[i].key === key) {
+          return i;
+        } else if (array[i].key !== key && array[i].children.length > 0) {
+          for (let j in array[i].children) {
+            if (array[i].children[j].key === key) {
+              return i;
+            }
+          }
+        }
+      }
+    },
+    getTableSub(key, array) {
+      for (let i in array) {
+        if (array[i].key === key) {
+          return;
+        } else if (array[i].key !== key && array[i].children.length > 0) {
+          for (let j in array[i].children) {
+            if (array[i].children[j].key === key) {
+              return j;
+            }
+          }
+        }
+      }
+    },
+    showMsg(title) {
+      this.$message.success(title);
+    },
+    showNot(message) {
+      this.$notification.success({
+        message,
+        duration: 1.5,
+      });
+    },
+    en(message) {
+      this.$notification.error({
+        message,
+        duration: 1.5,
+      });
+    },
     closeModal() {
       this.submitVisible = false;
+    },
+    closeEditModal() {
+      this.editVisible = false;
+      this.target = {};
+    },
+    closeSizeModal() {
+      this.target = {};
+      this.submitSizeVisible = false;
     },
     handleCategory() {
       for (let i in this.navData.length) {
@@ -761,15 +854,12 @@ export default {
       this.subData = this.navData[this.indexNum].sub;
     },
     deleteRecord(key) {
-      console.log(key);
-      this.proShowList = this.proShowList.filter((item) => item.key !== key);
+      this.proShowList = this.getDelTarget(key, this.proShowList);
+      this.proList = this.getDelTarget(key, this.proList);
       this.selectedRows = this.selectedRows.filter((item) => item.key !== key);
-    },
-    toggleAdvanced() {
-      this.advanced = !this.advanced;
+      this.$message.success("删除成功！");
     },
     remove(resolve, reject) {
-      // console.log(resolve);
       console.log(reject);
       this.proShowList = this.proShowList.filter(
         (item) =>
@@ -777,62 +867,104 @@ export default {
       );
       this.proList = this.proShowList;
       this.selectedRows = [];
+      this.showNot("批量删除成功!");
       resolve();
     },
+    //批量操作
     sale(resolve, reject) {
       console.log(reject);
-      this.proShowList = this.proShowList.filter((item) =>
-        this.selectedRows.filter((row) => row.key === item.key)
-      );
-      this.proShowList.forEach((item) => {
-        item.onSale = true;
-      });
-      this.proList = this.proShowList;
-      resolve();
-    },
-    offSale(resolve, reject) {
-      console.log(reject);
-      this.proShowList = this.proShowList.filter((item) =>
-        this.selectedRows.filter((row) => row.key === item.key)
-      );
-      this.proShowList.forEach((item) => {
-        item.onSale = false;
-      });
-      this.proList = this.proShowList;
-      resolve();
-    },
-    preSale(resolve, reject) {
-      console.log(reject);
-      this.proShowList = this.proShowList.filter((item) =>
-        this.selectedRows.filter((row) => row.key === item.key)
-      );
-      this.proShowList.forEach((item) => {
-        item.preSale = true;
-      });
-      this.proList = this.proShowList;
-      resolve();
-    },
-    isSale(resolve, reject) {
       if (this.selectedRows && this.selectedRows.length > 0) {
-        this.proShowList = this.proShowList.filter((item) =>
-          this.selectedRows.filter((row) => row.key === item.key)
-        );
-        this.proShowList.forEach((item) => {
-          item.preSale = false;
+        this.selectedRows.forEach((item) => {
+          const nav = this.getTableNav(item.key, this.proShowList);
+          const sub = this.getTableSub(item.key, this.proShowList);
+          if (nav && sub) {
+            this.proShowList[nav].children[sub].onSale = true;
+          } else if (nav && !sub) {
+            this.proShowList[nav].onSale = true;
+          } else {
+            this.$message.error("预期外错误!");
+          }
         });
         this.proList = this.proShowList;
-        this.$message.success("批量出售成功");
+        this.showNot("批量上架成功!");
         resolve();
       } else {
-        this.$message.error("未选中数据，无法进行批量操作!");
-        reject();
+        this.en("未选中数据，无法进行批量操作!");
+        // reject();
+      }
+    },
+    //批量操作
+    offSale(resolve, reject) {
+      console.log(reject);
+      if (this.selectedRows && this.selectedRows.length > 0) {
+        this.selectedRows.forEach((item) => {
+          const nav = this.getTableNav(item.key, this.proShowList);
+          const sub = this.getTableSub(item.key, this.proShowList);
+          if (nav && sub) {
+            this.proShowList[nav].children[sub].onSale = false;
+          } else if (nav && !sub) {
+            this.proShowList[nav].onSale = false;
+          } else {
+            this.$message.error("预期外错误!");
+          }
+        });
+        this.proList = this.proShowList;
+        this.showNot("批量下架成功!");
+        resolve();
+      } else {
+        this.en("未选中数据，无法进行批量操作!");
+        // reject();
+      }
+    },
+    //批量操作
+    preSale(resolve, reject) {
+      console.log(reject);
+      console.log(this.selectedRows);
+      if (this.selectedRows && this.selectedRows.length > 0) {
+        this.selectedRows.forEach((item) => {
+          const nav = this.getTableNav(item.key, this.proShowList);
+          const sub = this.getTableSub(item.key, this.proShowList);
+          if (nav && sub) {
+            this.proShowList[nav].children[sub].preSale = true;
+          } else if (nav && !sub) {
+            this.proShowList[nav].preSale = true;
+          } else {
+            this.$message.error("预期外错误!");
+          }
+        });
+        this.proList = this.proShowList;
+        this.showNot("批量预售成功！");
+        resolve();
+      } else {
+        this.en("未选中数据，无法进行批量操作!");
+        // reject();
+      }
+    },
+    //批量操作
+    isSale(resolve, reject) {
+      console.log(reject);
+      if (this.selectedRows && this.selectedRows.length > 0) {
+        this.selectedRows.forEach((item) => {
+          const nav = this.getTableNav(item.key, this.proShowList);
+          const sub = this.getTableSub(item.key, this.proShowList);
+          if (nav && sub) {
+            this.proShowList[nav].children[sub].preSale = false;
+          } else if (nav && !sub) {
+            this.proShowList[nav].preSale = false;
+          } else {
+            this.$message.error("预期外错误!");
+          }
+        });
+        this.proList = this.proShowList;
+        this.showNot("批量出售成功");
+        resolve();
+      } else {
+        this.en("未选中数据，无法进行批量操作!");
+        // reject();
       }
     },
     onClear() {
       this.$message.info("您清空了勾选的所有行");
-    },
-    onStatusTitleClick() {
-      this.$message.info("你点击了状态栏表头");
     },
     onChange() {
       this.$message.info("表格状态改变了");
@@ -844,90 +976,106 @@ export default {
     handleSearch(e) {
       e.preventDefault();
       this.queryForm.validateFields((error, values) => {
+        console.log(values);
         const queryKey = [];
         const queryValue = [];
-        if (!error) {
+        if (!error && values) {
           for (let i in values) {
-            if (values[i] === undefined) {
+            if (values[i] === undefined || !values[i]) {
               continue;
             } else {
               queryKey.push(i);
               queryValue.push(values[i]);
             }
           }
+          console.log(queryKey);
         }
-
         const { proList } = this;
+        console.log(proList);
         const _info = _.cloneDeep(proList);
         const result = [];
+        let count = 0;
         if (queryKey.length === 0) {
-          this.proShowList = _info;
+          this.$message.error("查询内容不能为空");
         } else {
           for (let i in proList) {
             for (let j in queryKey) {
-              let count = 0;
               const infoA = proList[i][queryKey[j]];
               if (
                 queryValue[j] !== undefined &&
-                infoA.indexOf(queryValue[j]) >= 0
+                infoA.includes(queryValue[j])
               ) {
                 count = count + 1;
-                if (count === queryKey.length) {
-                  result.push(_info[i]);
-                }
               }
+            }
+            if (count === queryKey.length) {
+              result.push(_info[i]);
+              count = 0;
+            } else if (count < queryKey.length) {
+              count = 0;
             }
             this.proShowList = result;
           }
         }
-        this.$message.success("查询成功");
+        if (
+          this.proShowList &&
+          this.proShowList.length > 0 &&
+          count === queryKey.length
+        ) {
+          this.showMsg("查询成功");
+        } else {
+          this.$message.error("查询失败，未搜索到符合条件的商品!");
+        }
+        console.log(this.proShowList);
       });
-      this.queryForm.resetFields();
+      // this.queryForm.resetFields();
     },
     handleReset() {
       this.queryForm.resetFields();
+      console.log(this.proList);
+      this.proShowList = Object.assign(this.proShowList, this.proList);
+      this.showMsg("重置成功!");
     },
     handleMenuClick(e) {
       const _this = this;
       if (e.key === "delete") {
-        this.$confirm({
-          title: "批量删除",
-          content: "你确定要批量删除选中的商品吗？",
-          onOk() {
-            return new Promise((resolve, reject) => {
-              const res = _this.remove(resolve, reject);
-              _this.$message.success("批量删除成功");
-              return res;
-            }).catch(() => console.log("Oops errors!"));
-          },
-          onCancel() {},
-        });
+        if (this.selectedRows && this.selectedRows.length > 0) {
+          this.$confirm({
+            title: "批量删除",
+            content: "您确定要批量删除选中的商品吗？",
+            onOk() {
+              return new Promise((resolve, reject) => {
+                const res = _this.remove(resolve, reject);
+                return res;
+              }).catch(() => console.log("Oops errors!"));
+            },
+            onCancel() {},
+          });
+        } else {
+          this.en("未选中数据，无法进行批量操作!");
+        }
       }
       if (e.key === "onSale") {
         return new Promise((resolve, reject) => {
           const res = _this.sale(resolve, reject);
-          _this.$message.success("批量上架成功");
           return res;
         });
       }
       if (e.key === "offSale") {
         return new Promise((resolve, reject) => {
           const res = _this.offSale(resolve, reject);
-          _this.$message.success("批量下架成功");
           return res;
         });
       }
       if (e.key === "preSale") {
         return new Promise((resolve, reject) => {
           const res = _this.preSale(resolve, reject);
-          _this.$message.success("批量预售成功");
           return res;
         });
       }
       if (e.key === "isSale") {
         return new Promise((resolve, reject) => {
           const res = _this.isSale(resolve, reject);
-
           return res;
         });
       }
@@ -1008,11 +1156,37 @@ export default {
     //新增商品
     handleAddOk(value) {
       const { proList } = this;
-      value.key = proList.length + 1;
-      value.pro_no = proList.length + 1;
-      proList.push(value);
-      console.log(this.proList);
-      this.proShowList = Object.assign(this.proShowList, proList);
+      if (value) {
+        value.key = this.getCurrentKey() + 1;
+        value.pro_no = this.getCurrentKey() + 1;
+        value.children = [];
+        proList.push(value);
+        this.proShowList = Object.assign(this.proShowList, proList);
+      }
+    },
+    handleUpdateOk(value) {
+      if (value) {
+        console.log(value);
+        const newData = this.getTarget(this.selectKey, this.proShowList);
+        const keys = Object.keys(value);
+        for (let i of keys) {
+          newData[i] = value[i];
+        }
+        console.log(newData);
+        const nav = this.getTableNav(this.selectKey, this.proList);
+        const sub = this.getTableSub(this.selectKey, this.proList);
+        if (nav && sub) {
+          this.proList[nav].children[sub] = newData;
+          this.proShowList[nav].children[sub] = newData;
+        } else if (!sub && nav) {
+          this.proList[nav] = newData;
+          this.proShowList[nav] = newData;
+        }
+        console.log(this.proList);
+        console.log("----------");
+        console.log(this.proShowList);
+        this.target = {};
+      }
     },
     handleImportChange(info) {
       if (info.file.status !== "uploading") {
@@ -1069,17 +1243,55 @@ export default {
       console.log(target);
     },
     handleEdit(key) {
+      this.selectKey = key;
+      console.log(this.selectKey);
       this.isEdit = true;
-      const newData = [...this.proList];
-      this.target = newData.filter((item) => item.key === key)[0];
+      this.target = this.getTarget(key, this.proShowList);
+      this.target.category_nav = this.target.pro_category.includes("/")
+        ? this.target.pro_category.split("/")[0]
+        : this.target.pro_category;
+      this.target.category_sub = this.target.pro_category.includes("/")
+        ? this.target.pro_category.split("/")[1]
+        : "";
       console.log(this.target);
-      this.submitVisible = true;
+      console.log(this.target.parentNode);
+      this.editVisible = true;
     },
     handleAddSize(key) {
-      const newData = [...this.proList];
+      this.isEdit = false;
+      this.selectKey = key;
+      const newData = [...this.proShowList];
       this.target = newData.filter((item) => item.key === key)[0];
-      console.log(this.target);
-      this.submitVisible = true;
+      this.target.category_nav = this.target.pro_category.includes("/")
+        ? this.target.pro_category.split("/")[0]
+        : this.target.pro_category;
+      this.target.category_sub = this.target.pro_category.includes("/")
+        ? this.target.pro_category.split("/")[1]
+        : "";
+      this.target.pro_color = "";
+      this.target.pro_size = "";
+      this.target.pro_price = "";
+      this.target.pro_old_price = "";
+      this.target.pro_priority = "";
+      this.target.pro_stock = "";
+      this.target.pro_detail = "";
+      this.proShowList = this.proList;
+      this.submitSizeVisible = true;
+    },
+    handleUpdateSize(value) {
+      if (value) {
+        console.log(value);
+        const { proList } = this;
+        value.key = this.getCurrentKey() + 1;
+        value.pro_no = this.getCurrentKey() + 1;
+        value.onSale = false;
+        value.preSale = false;
+        const nav = this.getTableNav(this.selectKey, proList);
+        const child = proList[nav].children;
+        child.push(value);
+        this.proShowList = this.proList;
+        console.log(this.proList);
+      }
     },
     handleBeforeUploadXlsx(file) {
       return new Promise((resolve, reject) => {
@@ -1092,57 +1304,49 @@ export default {
         return resolve(true);
       });
     },
+    //行操作
     handleOnSale(key) {
       const newData = [...this.proList];
-      const target = [...this.proList].filter((item) => item.key === key)[0];
+      let target = this.getTarget(key, this.proList);
       if (target) {
         target.onSale = true;
         this.proList = newData;
         this.proShowList = newData;
       }
-      this.$notification.success({
-        message: "上架成功",
-        duration: 1.5,
-      });
+      this.showNot("上架成功");
     },
+    //行操作
     handleOffSale(key) {
       const newData = [...this.proList];
-      const target = [...this.proList].filter((item) => item.key === key)[0];
+      let target = this.getTarget(key, this.proList);
       if (target) {
         target.onSale = false;
         this.proList = newData;
         this.proShowList = newData;
       }
-      this.$notification.success({
-        message: "下架成功",
-        duration: 1.5,
-      });
+      this.showNot("下架成功");
     },
+    //行操作
     handlePreSale(key) {
       const newData = [...this.proList];
-      const target = [...this.proList].filter((item) => item.key === key)[0];
+      let target = this.getTarget(key, this.proList);
       if (target) {
         target.preSale = true;
         this.proList = newData;
         this.proShowList = newData;
       }
-      this.$notification.success({
-        message: "预售成功",
-        duration: 1.5,
-      });
+      this.showNot("预售成功");
     },
+    //行操作
     handleIsSale(key) {
       const newData = [...this.proList];
-      const target = [...this.proList].filter((item) => item.key === key)[0];
+      let target = this.getTarget(key, this.proList);
       if (target) {
         target.preSale = false;
         this.proList = newData;
         this.proShowList = newData;
       }
-      this.$notification.success({
-        message: "出售成功",
-        duration: 1.5,
-      });
+      this.showNot("出售成功");
     },
   },
 };
@@ -1151,7 +1355,7 @@ export default {
 <style lang="less" scoped>
 @import url("../../assets/css/normal.css");
 .search {
-  margin-bottom: 54px;
+  margin-top: 20px;
 }
 .fold {
   width: calc(100% - 216px);
@@ -1170,5 +1374,8 @@ showuploadlist {
 }
 .uploadModal {
   height: 30px;
+}
+.show:hover {
+  cursor: pointer;
 }
 </style>

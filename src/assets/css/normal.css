@@ -1,20 +1,20 @@
 .select {
-  border-radius: 0px;
   width: 200px!important;
+  height: 30px;
   margin: 0px;
   margin-right: 5px;
-  height: 30px;
+  border-radius: 0px;
 }
 .input {
-  border: 1px solid #ccc;
-  color: #acacac;
-  margin-right: 5px;
   display: inline-block;
   height: 30px;
+  width: 200px!important;
+  line-height: 30px;
+  margin-right: 5px;
+  border: 1px solid #ccc;
+  color: #acacac;
   padding: 4px 6px;
   font-size: 14px;
-  line-height: 30px;
-  width: 200px;
 }
 
 .ant-form-item {

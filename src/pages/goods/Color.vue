@@ -1,98 +1,46 @@
 <template>
   <a-card>
-    <a-modal
-      :visible="addColorFormVisible"
-      :confirm-loading="confirmLoading"
-      @ok="handleAddOk"
-      @cancel="handleAddCancel"
-    >
-      <a-form :form="addColorForm" layout="horizontal">
-        <a-form-item label="颜色名称">
-          <a-input
-            placeholder="颜色名称"
-            v-decorator="[
-              'color_cn',
-              { rules: [{ required: true, message: '请填写商品名称' }] },
-            ]"
-          ></a-input>
-        </a-form-item>
-        <a-form-item label="颜色英文">
-          <a-input
-            placeholder="英文名称"
-            v-decorator="['color_en', { rules: [{ required: false }] }]"
-          ></a-input>
-        </a-form-item>
-        <a-form-item label="颜色代码">
-          <a-input
-            setFieldsValue="color_code"
-            placeholder="#000000"
-            v-decorator="[
-              'color_code',
-              { rules: [{ required: true, message: '请输入颜色代码' }] },
-            ]"
-          ></a-input>
-        </a-form-item>
-        <!-- <a-form-item label="选择颜色">
-          <colorPicker
-            setFieldsValue="color_code"
-            v-decorator="['color', { rules: [{ required: false }] }]"
-            @Change="handleChooseColor"
-          ></colorPicker>
-        </a-form-item> -->
-      </a-form>
-    </a-modal>
-    <div :class="advanced ? 'search' : null">
-      <a-form layout="horizontal" :form="queryColorForm">
-        <div :class="advanced ? null : 'fold'">
-          <a-row>
-            <a-col :md="8" :sm="24">
-              <a-form-item
-                label="颜色编号"
-                :labelCol="{ span: 5 }"
-                :wrapperCol="{ span: 18, offset: 1 }"
+    <color-submit
+      :isEdit="!isEdit"
+      :visible="addFormVisible"
+      :target="target"
+      @getSubmitInfo="handleAddOk"
+      @closeModal="closeAddModal"
+    />
+    <color-submit
+      :isEdit="isEdit"
+      :target="target"
+      :visible="editFormVisible"
+      @getSubmitInfo="handleUpdateOk"
+      @closeModal="closeEditModal"
+    />
+    <div class="search">
+      <div>
+        <a-row>
+          <a-col :md="2" :sm="24" style="margin-left: 10px">
+            <div style="height: 32px; line-height: 32px">颜色名称：</div>
+          </a-col>
+          <a-col :md="6" :sm="24">
+            <div>
+              <a-input
+                allow-clear
+                style="width: 80%"
+                v-model="query"
+                placeholder="请输入"
+                autocomplete="off"
+              />
+            </div>
+          </a-col>
+          <a-col :md="6" :sm="24">
+            <div style="margin-left: 30px">
+              <a-button type="primary" @click="handleSearch">查询</a-button>
+              <a-button style="margin-left: 8px" @click="handleReset"
+                >重置</a-button
               >
-                <a-input placeholder="请输入" />
-              </a-form-item>
-            </a-col>
-
-            <a-col :md="8" :sm="24">
-              <a-form-item
-                label="颜色名称"
-                :labelCol="{ span: 5 }"
-                :wrapperCol="{ span: 18, offset: 1 }"
-              >
-                <a-input placeholder="请输入" />
-              </a-form-item>
-            </a-col>
-            <a-col :md="8" :sm="24">
-              <a-form-item
-                label="颜色英文"
-                :labelCol="{ span: 5 }"
-                :wrapperCol="{ span: 18, offset: 1 }"
-              >
-                <a-input placeholder="请输入" />
-              </a-form-item>
-            </a-col>
-            <a-col :md="8" :sm="24">
-              <a-form-item
-                label="颜色代码"
-                :labelCol="{ span: 5 }"
-                :wrapperCol="{ span: 18, offset: 1 }"
-              >
-                <a-input placeholder="请输入" />
-              </a-form-item>
-            </a-col>
-          </a-row>
-        </div>
-        <span style="float: right; margin-top: 3px">
-          <a-button type="primary">查询</a-button>
-          <a-button style="margin-left: 8px">重置</a-button>
-          <a @click="toggleAdvanced" style="margin-left: 8px">
-            {{ advanced ? "收起" : "展开" }}
-            <a-icon :type="advanced ? 'up' : 'down'" />
-          </a>
-        </span>
-      </a-form>
+            </div>
+          </a-col>
+        </a-row>
+      </div>
     </div>
     <div>
       <a-space class="operator">
@@ -101,49 +49,49 @@
       </a-space>
       <standard-table
         :columns="columns"
-        :dataSource="colorList"
+        :dataSource="colorShowList"
         :selectedRows.sync="selectedRows"
         @clear="onClear"
         @change="onChange"
       >
         <template
-          v-for="(col, index) in [
-            'color_no',
-            'color_cn',
-            'color_en',
-            'color_code',
-          ]"
+          v-for="(col, index) in ['color_no', 'color_cn', 'color_en']"
           :slot="col"
-          slot-scope="{ text, record }"
+          slot-scope="{ text }"
         >
           <div :key="index">
-            <a-input
-              v-if="record.editable"
-              :value="text"
-              @change="(e) => handleInfoChange(e.target.value, record.key, col)"
-            />
-            <span v-else>{{ text }}</span>
+            <span class="editInput">{{ text }}</span>
           </div>
         </template>
+        <template slot="color_code" slot-scope="{ text, record }">
+          <color-picker
+            v-model="record.color_code"
+            style="margin-right: 5px"
+            disabled
+          />
+          <span class="editInput">{{ text }}</span>
+        </template>
         <div slot="color_action" slot-scope="{ record }">
-          <!-- <a style="margin-right: 8px"> <a-icon type="edit" />编辑 </a> -->
-          <span v-if="record.editable">
-            <a-button @click="() => handleInfoSave(record.key)">保存</a-button>
-            <a-popconfirm
-              title="确定要取消吗？"
-              @confirm="() => handleInfoCancel(record.key)"
+          <a-tooltip placement="top" title="编辑">
+            <a-button
+              type="dashed"
+              shape="circle"
+              style="color: #2353b8"
+              :disabled="editingKey !== ''"
+              @click="() => handleInfoEdit(record.key)"
             >
-              <a-button>取消</a-button>
-            </a-popconfirm>
-          </span>
-          <a-button
-            v-else
-            :disabled="editingKey !== ''"
-            @click="() => handleInfoEdit(record.key)"
-            >编辑</a-button
+              <a-icon type="edit" /> </a-button
+          ></a-tooltip>
+          <a-popconfirm
+            title="确定要删除吗?"
+            @confirm="() => deleteRecord(record.key)"
           >
-          <br />
-          <a-button @click="handleInfoDelete(record.key)">删除 </a-button>
+            <a-tooltip placement="top" title="删除">
+              <a-button type="dashed" shape="circle" style="color: #f5222d"
+                ><a-icon type="delete"
+              /></a-button>
+            </a-tooltip>
+          </a-popconfirm>
         </div>
         <template slot="statusTitle">
           <a-icon @click.native="onStatusTitleClick" type="info-circle" />
@@ -155,12 +103,12 @@
 
 <script>
 import StandardTable from "@/components/table/StandardTable";
-// import { mapState } from "vuex";
+import ColorSubmit from "./components/ColorSubmit";
+import _ from "lodash";
 const columns = [
   {
     title: "颜色编号",
     dataIndex: "color_no",
-    sorter: true,
     align: "center",
     scopedSlots: { customRender: "color_no" },
   },
@@ -187,7 +135,6 @@ const columns = [
   {
     title: "操作",
     dataIndex: "color_action",
-    sorter: true,
     align: "center",
     scopedSlots: { customRender: "color_action" },
   },
@@ -197,9 +144,9 @@ const colorList = [
   {
     key: "1",
     color_no: "1",
-    color_cn: "白色",
-    color_en: "white",
-    color_code: "#ffffff",
+    color_cn: "黄色",
+    color_en: "yellow",
+    color_code: "#ffff00",
   },
   {
     key: "2",
@@ -219,132 +166,184 @@ const colorList = [
 
 export default {
   name: "color",
-  components: { StandardTable },
+  components: { StandardTable, ColorSubmit },
   data() {
     return {
+      isEdit: false,
       advanced: true,
       columns: columns,
       colorList,
       colorShowList: colorList,
       selectedRows: [],
       editingKey: "",
-      addColorFormVisible: false,
-      confirmLoading: false,
-      color_code: "#ff0000",
+      addFormVisible: false,
+      editFormVisible: false,
+      target: { pick_color: "#000000" },
+      selectKey: "",
+      query: "",
     };
   },
-  // authorize: {
-  //   deleteRecord: "delete",
-  // },
-  // computed() {
-  //   mapState({
-  //     colorList: (state) => state.goods.colorList,
-  //   });
-  // },
   beforeCreate() {
     this.queryColorForm = this.$form.createForm(this);
-    this.addColorForm = this.$form.createForm(this);
-  },
-  created() {
-    this.colorList.forEach((item) => {
-      item["editable"] = false;
-    });
-    console.log(this.$store.state.goods.colorList);
   },
   methods: {
-    toggleAdvanced() {
-      this.advanced = !this.advanced;
+    sn(message) {
+      this.$notification.success({
+        message,
+        duration: 1.5,
+      });
     },
-    handleAllDelete() {
-      this.colorList = this.colorList.filter(
-        (item) =>
-          this.selectedRows.findIndex((row) => row.key === item.key) === -1
-      );
-      this.selectedRows = [];
+    en(message) {
+      this.$notification.error({
+        message,
+        duration: 1.5,
+      });
     },
     onClear() {
       this.$message.info("您清空了勾选的所有行");
     },
-    onStatusTitleClick() {
-      this.$message.info("你点击了状态栏表头");
-    },
     onChange() {
       this.$message.info("表格状态改变了");
     },
-
-    handleInfoChange(value, key, column) {
-      const newData = [...this.colorList];
-      const target = newData.filter((item) => key === item.key)[0];
-      if (target) {
-        target[column] = value;
-        this.colorList = newData;
+    getTarget(key, array) {
+      let target = {};
+      for (let i of array) {
+        if (i.key === key) {
+          target = i;
+        }
+      }
+      return target;
+    },
+    getColorIndex(key, array) {
+      for (let i in array) {
+        if (array[i].key === key) {
+          return i;
+        }
       }
     },
+    remove(resolve, reject) {
+      console.log(reject);
+      this.colorList = this.colorList.filter(
+        (item) =>
+          this.selectedRows.findIndex((row) => row.key === item.key) === -1
+      );
+      this.colorShowList = this.colorList;
+      this.selectedRows = [];
+      this.sn("批量删除成功");
+      resolve();
+    },
+    handleAllDelete() {
+      const _this = this;
+      if (this.selectedRows && this.selectedRows.length > 0) {
+        this.$confirm({
+          title: "批量删除",
+          content: "您确定要批量删除选中的颜色吗？",
+          onOk() {
+            return new Promise((resolve, reject) => {
+              const res = _this.remove(resolve, reject);
+              return res;
+            }).catch(() => console.log("Oops errors!"));
+          },
+          onCancel() {},
+        });
+      } else {
+        this.en("未选中数据，无法进行批量操作!");
+      }
+    },
+    //删除所选行
+    deleteRecord(key) {
+      this.colorList = this.colorList.filter((item) => item.key !== key);
+      this.colorShowList = this.colorShowList.filter(
+        (item) => item.key !== key
+      );
+      this.$message.success("删除成功！");
+    },
+    //新增颜色
+    addNew() {
+      this.isEdit = false;
+      this.addFormVisible = true;
+    },
+    handleAddOk(value) {
+      console.log(value);
+      const { colorList } = this;
+      if (value) {
+        value.key = colorList.length + 1;
+        value.color_no = colorList.length + 1;
+        colorList.push(value);
+        this.colorShowList = Object.assign(this.colorShowList, colorList);
+        this.addFormVisible = false;
+      } else {
+        this.$message.error("上传错误!");
+      }
+    },
+    closeAddModal() {
+      this.addFormVisible = false;
+    },
+    //编辑颜色
     handleInfoEdit(key) {
-      const newData = [...this.colorList];
-      const target = newData.filter((item) => item.key === key)[0];
-      this.editingKey = key;
-      if (target) {
-        target.editable = true;
-        this.colorList = newData;
+      this.selectKey = key;
+      this.isEdit = true;
+      this.target = Object.assign(
+        this.target,
+        this.getTarget(key, this.colorList)
+      );
+      this.target.pick_color = this.target.color_code;
+      console.log(this.colorList);
+      this.editFormVisible = true;
+      console.log(this.target);
+    },
+    handleUpdateOk(value) {
+      if (value) {
+        const newData = this.getTarget(this.selectKey, this.colorList);
+        newData.color_cn = value.color_cn;
+        newData.color_en = value.color_en;
+        newData.color_code = value.color_code;
+        const index = this.getColorIndex(this.selectKey, this.colorList);
+        this.colorList[index] = newData;
+        this.colorShowList[index] = newData;
+        this.editFormVisible = false;
+        this.target = {};
+        this.target["pick_color"] = "#000000";
       }
     },
-    handleInfoSave(key) {
-      const newData = [...this.colorList];
-      const newShowData = [...this.colorShowList];
-      const target = newData.filter((item) => key === item.key)[0];
-      const targetShow = newShowData.filter((item) => key === item.key)[0];
-      if (target && targetShow) {
-        target.editable = false;
-        this.colorList = newData;
-        Object.assign(targetShow, target);
-        this.colorShowList = newShowData;
-      }
-      this.editingKey = "";
-    },
-    handleInfoCancel(key) {
-      const newData = [...this.colorList];
-      const target = newData.filter((item) => key === item.key)[0];
-      if (target) {
-        Object.assign(
-          target,
-          this.colorShowList.filter((item) => item.key === key)[0]
-        );
-      }
-      target.editable = false;
-      this.editingKey = "";
-      this.colorList = newData;
+    closeEditModal() {
+      this.editFormVisible = false;
+      this.target = {};
+      this.target["color_code"] = "#000000";
     },
     handleInfoDelete(key) {
       this.colorList = this.colorList.filter((item) => item.key !== key);
       this.selectedRows = this.selectedRows.filter((item) => item.key !== key);
     },
-    //新增颜色
-    addNew() {
-      this.addColorFormVisible = true;
-      console.log(this.addColorForm);
-    },
-    handleChooseColor(e) {
-      this.addColorForm.color_code = e.target.color;
-    },
-    handleAddOk() {
-      this.addColorForm.validateFields((err, value) => {
-        if (!err) {
-          console.log("Received values of form:", value);
-          value.key = this.colorList.length + 1;
-          value.color_no = this.colorList.length + 1;
-          this.colorList.splice(this.colorList.length, 1, value);
+    //搜索
+    handleSearch(e) {
+      e.preventDefault();
+      const { colorList, query } = this;
+      const _info = _.cloneDeep(colorList);
+      const result = [];
+      if (query) {
+        for (let i in _info) {
+          if (colorList[i].color_cn.includes(query)) {
+            console.log(11111);
+            result.push(_info[i]);
+          }
         }
-      });
-      this.confirmLoading = true;
-      setTimeout(() => {
-        this.addColorFormVisible = false;
-        this.confirmLoading = false;
-        this.addColorForm.resetFields();
-      }, 2000);
+        if (result && result.length > 0) {
+          this.colorShowList = result;
+          console.log(this.colorShowList);
+          this.$message.success("搜索成功!");
+        } else {
+          this.colorShowList = [];
+          this.$message.error("搜索失败，未找到符合条件的结果!");
+        }
+      } else {
+        this.$message.error("搜索条件不能为空!");
+      }
     },
-    handleAddCancel() {
-      this.addColorFormVisible = false;
+    handleReset() {
+      this.colorShowList = this.colorList;
+      this.query = "";
+      this.$message.success("重置成功!");
     },
   },
 };
@@ -352,7 +351,7 @@ export default {
 
 <style lang="less" scoped>
 .search {
-  margin-bottom: 54px;
+  margin-bottom: 10px;
 }
 .fold {
   width: calc(100% - 216px);
@@ -365,5 +364,8 @@ export default {
   .fold {
     width: 100%;
   }
+}
+.editInput {
+  width: 150px;
 }
 </style>

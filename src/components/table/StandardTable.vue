@@ -17,7 +17,7 @@
       </a-alert>
     </div>
     <a-table
-      :scroll="{ x: 1500 }"
+      :scroll="columns.length > 7 ? { x: 1500 } : {}"
       :bordered="bordered"
       :loading="loading"
       :columns="columns"
